@@ -1,0 +1,18 @@
+{
+  "name": "tapecommerce-showcase",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test test/*.test.mjs",
+    "check": "node --check server.mjs && node --check sandbox.mjs && node --check public/app.js"
+  },
+  "dependencies": {
+    "@foundry-rs/anvil": "1.7.1"
+  },
+  "license": "GPL-3.0-only"
+}

@@ -1,0 +1,14 @@
+**/node_modules/
+**/bin/
+**/artifacts/
+**/data/
+**/db/
+**/logs/
+**/*.db*
+**/*.sqlite*
+**/.env*
+**/config.yml
+**/*.pem
+**/*.key
+.local/
+.DS_Store
