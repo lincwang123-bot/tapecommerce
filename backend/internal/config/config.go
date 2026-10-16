@@ -14,6 +14,7 @@ import (
 
 // Config 应用配置结构
 type Config struct {
+	TapeCommerce TapeCommerceConfig `mapstructure:"tapecommerce"`
 	App          AppConfig          `mapstructure:"app"`
 	Server       ServerConfig       `mapstructure:"server"`
 	Log          LogConfig          `mapstructure:"log"`
@@ -313,6 +314,13 @@ func Load() *Config {
 	viper.AddConfigPath("../")   // 如果从 cmd/server 运行
 	viper.AddConfigPath("./etc") // etc 文件夹
 
+	// Explicit defaults also bind operator environment variables for Viper Unmarshal.
+	for _, key := range []string{"shop_id", "checkout", "merchant", "tenant_hash", "quote_signer", "rpc_primary", "rpc_secondary", "signer_url", "signer_secret_file"} {
+		viper.SetDefault("tapecommerce."+key, "")
+	}
+	viper.SetDefault("tapecommerce.enabled", false)
+	viper.SetDefault("tapecommerce.migrate", false)
+	viper.SetDefault("tapecommerce.channel_id", 0)
 	// 设置默认值（可选）
 	viper.SetDefault("app.secret_key", "change-me-32-byte-secret-key!!")
 	viper.SetDefault("app.totp_issuer", "Dujiao-Next")

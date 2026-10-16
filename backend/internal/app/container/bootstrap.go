@@ -2,7 +2,9 @@ package container
 
 import (
 	"errors"
+	tapecommercebootstrap "github.com/dujiao-next/internal/bootstrap/tapecommerce"
 	nowpayments "github.com/dujiao-next/internal/modules/payment/infrastructure/gateway/adapters/nowpayments"
+	"github.com/dujiao-next/internal/platform/database/gormdb"
 
 	"github.com/dujiao-next/internal/cache"
 	"github.com/dujiao-next/internal/config"
@@ -50,6 +52,7 @@ func NewContainer(cfg *config.Config) (*Container, error) {
 		return nil, err
 	}
 	c.initServices()
+	c.TapeCommerce = tapecommercebootstrap.NewLive(cfg.TapeCommerce, gormdb.DB, cfg.App.SecretKey, c.OrderService, c.PaymentService, c.FulfillmentService)
 	return c, nil
 }
 

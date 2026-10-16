@@ -107,6 +107,7 @@ func TestClosedCommerceDispatchesOnlyExactTransactionSubmission(t *testing.T) {
 		method, path string
 		want         int
 	}{
+		{"POST", "/api/v1/orders/ORDER123/tapecommerce/submit", 401}, {"POST", "/api/v1/guest/orders/ORDER123/tapecommerce/submit", 401}, {"POST", "/api/v1/orders/ORDER123/tapecommerce/quote", 503}, {"POST", "/api/v1/orders/ORDER123/tapecommerce/submit/extra", 503},
 		{"POST", "/api/v1/payments/1/submit-tx", 401}, {"POST", "/api/v1/guest/payments/2/submit-tx", 401}, {"POST", "/api/v1/wallet/recharge/payments/3/submit-tx", 401},
 		{"PUT", "/api/v1/payments/1/submit-tx", 503}, {"POST", "/api/v1/payments/0/submit-tx", 503}, {"POST", "/api/v1/payments/01/submit-tx", 503}, {"POST", "/api/v1/payments/1/submit-tx/extra", 503}, {"POST", "/api/v1/payments/1/capture", 503},
 	} {

@@ -293,6 +293,14 @@ func (s *PaymentService) ValidateChannel(channel *paymentdomain.PaymentChannel) 
 
 	providerType := strings.ToLower(strings.TrimSpace(channel.ProviderType))
 	channelType := strings.ToLower(strings.TrimSpace(channel.ChannelType))
+	// TapeCommerce channel metadata has no gateway credentials; the separate
+	// default-disabled order bridge owns quote signing and receipt admission.
+	if providerType == "tapecommerce" {
+		if channelType != "okb" || channel.InteractionMode != "wallet" || !channel.FeeRate.IsZero() || !channel.FixedFee.IsZero() || len(channel.ConfigJSON) != 0 {
+			return ErrPaymentChannelConfigInvalid
+		}
+		return nil
+	}
 	if voucherbridge.Enabled() && providerType != constants.PaymentProviderWallet && !s.isStoreCryptoChannel(channel) {
 		return ErrPaymentChannelConfigInvalid
 	}

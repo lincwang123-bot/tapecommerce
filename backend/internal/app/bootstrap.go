@@ -31,6 +31,9 @@ func BuildRunner(cfg *config.Config, mode string) (*Runner, error) {
 		}
 	}
 	var services []Service
+	if cfg.TapeCommerce.Enabled && dependencies.TapeCommerce != nil {
+		services = append(services, dependencies.TapeCommerce)
+	}
 	services = append(services, &chainService{payments: dependencies.PaymentService, done: make(chan struct{})})
 	if chainpayment.AutoDiscoveryEnabled() {
 		for _, network := range []string{"ethereum", "bsc", "polygon", "tron"} {

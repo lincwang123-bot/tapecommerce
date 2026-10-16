@@ -16,6 +16,7 @@ type Preparation struct {
 	ShopID    string `gorm:"primaryKey;size:128"`
 	OrderID   uint   `gorm:"primaryKey"`
 	BuyerID   uint
+	Guest     bool
 	Payer     string
 	CreatedAt time.Time
 }
@@ -25,6 +26,7 @@ func (Preparation) TableName() string { return "tapecommerce_quote_preparations"
 type Binding struct {
 	InvoiceID string `gorm:"primaryKey;size:66"`
 	BuyerID   uint
+	Guest     bool
 	PaymentID uint `gorm:"uniqueIndex;not null"`
 	Signature string
 	CreatedAt time.Time
@@ -34,7 +36,7 @@ func (Binding) TableName() string { return "tapecommerce_payment_bindings" }
 
 func (s *Store) Prepare(ctx context.Context, p Preparation) error {
 	p.Payer = strings.ToLower(p.Payer)
-	if p.ShopID == "" || p.OrderID == 0 || p.BuyerID == 0 || !domain.ValidHex(p.Payer, 20) || domain.IsZeroHex(p.Payer) {
+	if p.ShopID == "" || p.OrderID == 0 || (p.BuyerID == 0 && !p.Guest) || (p.BuyerID != 0 && p.Guest) || !domain.ValidHex(p.Payer, 20) || domain.IsZeroHex(p.Payer) {
 		return domain.ErrInvalid
 	}
 	res := s.db.WithContext(ctx).Clauses(clause.OnConflict{DoNothing: true}).Create(&p)
@@ -48,7 +50,7 @@ func (s *Store) Prepare(ctx context.Context, p Preparation) error {
 	if err != nil {
 		return err
 	}
-	if old.BuyerID != p.BuyerID || old.Payer != p.Payer {
+	if old.BuyerID != p.BuyerID || old.Guest != p.Guest || old.Payer != p.Payer {
 		return domain.ErrConflict
 	}
 	return nil
@@ -62,7 +64,7 @@ func (s *Store) Prepared(ctx context.Context, shop string, orderID uint) (Prepar
 	return p, err
 }
 func (s *Store) Bind(ctx context.Context, b Binding) error {
-	if b.BuyerID == 0 || b.PaymentID == 0 || !domain.ValidHex(b.InvoiceID, 32) || !domain.ValidHex(b.Signature, 65) {
+	if (b.BuyerID == 0 && !b.Guest) || (b.BuyerID != 0 && b.Guest) || b.PaymentID == 0 || !domain.ValidHex(b.InvoiceID, 32) || !domain.ValidHex(b.Signature, 65) {
 		return domain.ErrInvalid
 	}
 	return s.db.WithContext(ctx).Create(&b).Error

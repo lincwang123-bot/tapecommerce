@@ -8,6 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var tapeStoredSubmission = regexp.MustCompile(`^/api/v1/(?:guest/)?orders/[^/]+/tapecommerce/submit$`)
+
 var storedChainSubmission = regexp.MustCompile(`^/api/v1/(?:payments/[1-9][0-9]*|guest/payments/[1-9][0-9]*|wallet/recharge/payments/[1-9][0-9]*)/submit-tx$`)
 
 // Production is closed by default until payment and redemption are commissioned.
@@ -36,7 +38,7 @@ func CommerceLaunchGate() gin.HandlerFunc {
 		// Login remains available while checkout is closed, including its second
 		// factor. The normal challenge handler and limiter still verify it.
 		loginChallenge := c.Request.Method == "POST" && path == "/api/v1/auth/login/verify-2fa"
-		if !enabled && !paymentNotification && !loginChallenge && !(c.Request.Method == "POST" && storedChainSubmission.MatchString(path)) && c.Request.Method != "GET" && c.Request.Method != "HEAD" && c.Request.Method != "OPTIONS" && !strings.HasPrefix(path, "/api/v1/admin/") && path != "/api/v1/auth/login" && path != "/api/v1/auth/logout" {
+		if !enabled && !paymentNotification && !loginChallenge && !(c.Request.Method == "POST" && (storedChainSubmission.MatchString(path) || tapeStoredSubmission.MatchString(path))) && c.Request.Method != "GET" && c.Request.Method != "HEAD" && c.Request.Method != "OPTIONS" && !strings.HasPrefix(path, "/api/v1/admin/") && path != "/api/v1/auth/login" && path != "/api/v1/auth/logout" {
 			c.AbortWithStatusJSON(503, gin.H{"status_code": 503, "msg": "商城筹备中，充值与购买暂未开放", "error_code": "commerce_not_open"})
 			return
 		}

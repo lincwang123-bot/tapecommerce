@@ -325,3 +325,37 @@ func validateWalletChannelEligibility(channel paymentdomain.PaymentChannel, user
 	}
 	return nil
 }
+
+// ValidateVerifiedStockChannel reuses the original channel policy for a verified
+// on-chain payment. Products must be the repository of the caller's transaction.
+func (s *PaymentService) ValidateVerifiedStockChannel(order *orderdomain.Order, channel *paymentdomain.PaymentChannel, products productcontract.Repository) error {
+	if order == nil || channel == nil || products == nil || !channel.IsActive || channel.DeletedAt != nil {
+		return ErrPaymentChannelNotAllowedForProduct
+	}
+	if err := validatePaymentAmountForChannel(order.TotalAmount.Decimal, channel); err != nil {
+		return err
+	}
+	if err := validateOrderChannelEligibility(*channel, order); err != nil {
+		return err
+	}
+	items := append([]orderdomain.OrderItem{}, order.Items...)
+	for _, child := range order.Children {
+		items = append(items, child.Items...)
+	}
+	ids := map[uint]bool{}
+	for _, item := range items {
+		ids[item.ProductID] = true
+	}
+	wanted := make([]uint, 0, len(ids))
+	for id := range ids {
+		if id == 0 {
+			return ErrPaymentInvalid
+		}
+		wanted = append(wanted, id)
+	}
+	rows, err := products.ListByIDs(wanted)
+	if err != nil || len(rows) != len(wanted) {
+		return ErrProductFetchFailed
+	}
+	return s.validateProductPaymentChannel(items, channel.ID, products)
+}

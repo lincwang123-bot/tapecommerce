@@ -41,7 +41,7 @@ func ValidateOrder(o *orderdomain.Order, buyer uint, amount string, paidAt time.
 	return nil
 }
 func eligible(o *orderdomain.Order, buyer uint, amount string, paidAt time.Time) bool {
-	if buyer == 0 || o.UserID != buyer || o.ResellerID != nil || o.AffiliateProfileID != nil || o.DeletedAt != nil || o.CanceledAt != nil || o.PaidAt != nil || o.Status != constants.OrderStatusPendingPayment || o.Currency != "USDT" || !o.TotalAmount.IsPositive() || o.TotalAmount.String() != amount || !o.WalletPaidAmount.IsZero() || (!o.OnlinePaidAmount.IsZero() && !o.OnlinePaidAmount.Equal(o.TotalAmount.Decimal)) || !o.RefundedAmount.IsZero() || o.ExpiresAt == nil || paidAt.Unix() < o.CreatedAt.Unix() || !paidAt.Before(*o.ExpiresAt) {
+	if (buyer == 0 && (o.GuestEmail == "" || o.GuestPassword == "")) || o.UserID != buyer || o.ResellerID != nil || o.AffiliateProfileID != nil || o.DeletedAt != nil || o.CanceledAt != nil || o.PaidAt != nil || o.Status != constants.OrderStatusPendingPayment || o.Currency != "USDT" || !o.TotalAmount.IsPositive() || o.TotalAmount.String() != amount || !o.WalletPaidAmount.IsZero() || (!o.OnlinePaidAmount.IsZero() && !o.OnlinePaidAmount.Equal(o.TotalAmount.Decimal)) || !o.RefundedAmount.IsZero() || o.ExpiresAt == nil || paidAt.Unix() < o.CreatedAt.Unix() || !paidAt.Before(*o.ExpiresAt) {
 		return false
 	}
 	for _, i := range o.Items {

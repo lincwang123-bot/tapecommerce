@@ -135,6 +135,11 @@ func (s *PaymentService) CreatePayment(input CreatePaymentInput) (*CreatePayment
 				if resolvedChannel == nil {
 					return ErrPaymentChannelNotFound
 				}
+				// This provider is admitted only by the typed-invoice receipt bridge.
+				// Reject before reserving wallet funds or creating any generic payment.
+				if resolvedChannel.ProviderType == "tapecommerce" {
+					return ErrPaymentProviderNotSupported
+				}
 				if !resolvedChannel.IsActive {
 					return ErrPaymentChannelInactive
 				}

@@ -2,16 +2,18 @@
 
 The original-order payment bridge is implemented and exercised on isolated SQLite
 with original order creation, payment ledger, reserved card inventory, fulfillment
-and authorized claim. Production remains disabled: no live container, public shop
-router or production migration invokes it. A zero-value Service/Bridge is disabled,
-and DeliverOne still requires an AtomicAdmission implementation.
+and authorized claim. The original storefront now has an explicit live composition,
+disabled by default. It uses the original member/guest authorization and never
+starts the demo runtime. A zero-value Service/Bridge is disabled, and DeliverOne
+still requires an AtomicAdmission implementation.
 
 ## Order and payment boundary
 
 `bootstrap/tapecommerce.Bridge` provides private server-to-server Prepare, Persist,
-Submit, Status and ClaimDelivery ports. The authenticated Node service supplies the
-buyer ID; browser-supplied prices, shop IDs and claimed payment results are never
-trusted. Configuration pins shop, checkout, tenant hash, merchant and payment channel.
+Submit, Status and ClaimDelivery ports. The original Go storefront authorizes the member or guest order and supplies an
+immutable owner scope; browser-supplied prices, buyer IDs, shop IDs and claimed
+payment results are never trusted. The isolated demo has a separate trusted
+server-to-server adapter and is never used by the live routes. Configuration pins shop, checkout, tenant hash, merchant and payment channel.
 
 Prepare pins the current buyer/order/payer. Persist re-reads the original order
 under its lock, requires USDT and the exact `money.Amount.String()` payable value,
@@ -46,8 +48,9 @@ manual, reseller, affiliate, hybrid-wallet and fee-bearing orders are unsupporte
 and fail closed. The generic payment callback rejects TapeCommerce provider
 records, so it cannot bypass receipt admission.
 
-Only ClaimDelivery returns decrypted payload, after checking the current buyer,
-order/refund state and delivered invoice. Submit/Status return no card payload.
+The live storefront continues to use the original authorized order fulfillment
+download, containing the original stock payload. The demo ClaimDelivery additionally
+checks invoice/review/refund state. Submit/Status return no card payload.
 Review after an outbox claim is serialized against actual stock release by the
 same invoice row lock. A process mutex or a second RPC check is not used as a
 substitute for transactional admission.
@@ -63,7 +66,8 @@ recoverable; contradictions and reorg enter review. Relayers/account abstraction
 are not supported. RPC safe agreement does not itself prove Ethereum settlement.
 
 `gormstore.Migrate` is explicit: invoice, payment event, fulfillment outbox, quote
-preparation and payment binding tables. No production startup calls it. Unique
+preparation and payment binding tables. Live startup calls it only when both
+`tapecommerce.enabled` and the explicit `tapecommerce.migrate` option are true. Unique
 invoice, shop/order, chain/transaction/log and outbox keys enforce idempotency.
 
 ## Isolated demo
@@ -109,3 +113,44 @@ Their chain verifier is explicitly synthetic. Separate local HTTP RPC fixtures
 exercise EVM parsing and safety checks. Earlier fake-outbox tests remain useful
 for lease mechanics but are not evidence of real payment/stock integration.
 All test databases and HTTP fixtures are owned temporary resources and cleaned up.
+
+## Original storefront live integration
+
+See `docs/tapecommerce/evidence/live-payment-integration.md` and
+`docs/tapecommerce/quote-service.md` for the configuration and evidence. New routes
+use the existing `/api/v1` envelope and original Bearer/Guest credentials:
+
+- `GET /public/tapecommerce/config`
+- `POST /orders/:order_no/tapecommerce/quote` accepts only `payer`.
+- `POST /orders/:order_no/tapecommerce/submit` accepts only `invoice_id` and `transaction_hash`.
+- `GET /orders/:order_no/tapecommerce/status` reads/reconciles the owned invoice.
+- Guests use the same paths under `/guest` and the existing Guest authorization.
+
+The service creates no users, funds no wallets and never sends blockchain
+transactions. Wallets pay the exact signed invoice themselves. Existing USDT
+payment flows are preserved; the generic CreatePayment path rejects TapeCommerce
+before reserving balance or creating any payment row. Channel metadata can be
+registered through the existing admin channel API using provider `tapecommerce`,
+channel `okb`, interaction `wallet`, zero fees and empty config_json. All secret,
+identity, contract and RPC configuration stays in operator configuration.
+
+Live readiness requires the private signer's actual chain/identity/contract
+preflight and matching tenant, checkout, merchant and signer. Anonymous config
+requests share a five-second cache, including failure. New signing performs fresh
+preflight inside the private Sign endpoint; repeating an existing quote performs
+fresh health checking. Repeated active quotes preserve the invoice/signature;
+canceled, already-paid, repriced and expired orders cannot retrieve a payable
+quote. An expired invoice is never overwritten: create a new order instead.
+
+Enabled runtimes register a bounded durable reconciliation worker with the app
+Start/Stop lifecycle. Submitted hashes continue through safe verification and
+atomic stock release after the page closes. Disabled mode performs no migration,
+RPC or reconciliation; authorized status can still read an existing invoice and
+otherwise returns 404 so ordinary USDT checkout remains usable.
+
+Only pure online USDT, local automatic-stock orders are supported. Reseller,
+affiliate, manual/upstream, wallet-mixed and fee-bearing orders fail closed.
+Order cancellation/refund/stockout before admission enters review rather than
+releasing stock. A lost hash never submitted to Go or a speed-up replacement
+requires reconciliation outside this first supported path; no public recovery
+endpoint can rewrite an invoice or claim payment success.

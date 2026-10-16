@@ -61,9 +61,9 @@ func TestBootstrapPackagesStayFocused(t *testing.T) {
 				budget = 6
 			}
 			if entry.Name() == "tapecommerce" {
-				// Opt-in payment/stock bridge and regression tests, plus the
-				// isolated demo composition and authenticated loopback handler.
-				budget = 6
+				// Original-stock transaction bridge, isolated demo, and explicit live
+				// composition with private signer, authorized HTTP and lifecycle worker.
+				budget = 11
 			}
 			assertDirectoryGoFileBudget(t, filepath.Join(bootstrapRoot, entry.Name()), budget)
 		})

@@ -1,5 +1,5 @@
 // Package tapecommercebootstrap defines opt-in bridges to the existing shop.
-// No constructor in the live container calls these bridges in this release.
+// Live composition is explicitly configured and disabled by default.
 package tapecommercebootstrap
 
 import (

@@ -8,14 +8,17 @@ TapeCommerce connects digital-goods inventory to TapeOut on X Layer. This reposi
 
 - **Live, read-only:** TapeOut identity on X Layer, pinned to a safe block with its hash rechecked. The default `1.2.2.tape` record is a third-party public sample, not a store owned by this project.
 - **Live market data:** the fixed public OKX `OKB-USDT` spot ticker. A USDT price is divided by `last`, rounded up to OKB wei using integers and locked for a short invoice lifetime. This is a price reference, not an exchange trade or guaranteed execution price.
+- **Existing storefront templates:** the six Coco9 themes are reused directly, including their original hero images. Product selection, order confirmation and order summary share presentation modules with the original store. The themes predate the competition; the new work connects the checkout and delivery flow.
 - **Isolated payment demo:** a private Anvil process executes the compiled checkout contract; the original Go order/stock modules verify payment evidence and deliver a synthetic license plus an HTML store kit. Two local read endpoints share the same simulator. They are not independent mainnet nodes.
 - **Not launched:** mainnet checkout, real customer payments, our own DeWEB publication and commercial merchant service. There are no verified paying-user or revenue claims.
 
 The demo does not connect the viewer's wallet or need real OKB. Anvil deliberately uses chain ID 196 to exercise the checkout's chain restriction; that does **not** turn it into X Layer mainnet. The UI labels payment receipts as local simulation.
 
+The source also includes a disabled-by-default production integration: authenticated member/guest order routes, a persistent reconciliation worker, a private quote signer and the browser wallet module. These require an operator's existing commerce/Studio environment, verified own TapeOut identity, approved deployed checkout and protected signing configuration. The public showcase does not enable them. See [quote-service prerequisites](docs/quote-service.md), [order integration and limits](docs/live-payment-integration.md) and [template/browser validation](docs/template-payment-integration.md).
+
 Try the public showcase: **[tape.coco9.cc](https://tape.coco9.cc)**. Public HTTPS, the payment-to-stock/download flow, order recovery, and desktop/mobile layouts were accepted on 2026-10-17. Payments still execute only in the isolated local EVM; **mainnet checkout is not launched**.
 
-[Watch the 140-second demo release](https://github.com/lincwang123-bot/tapecommerce/releases/tag/v0.1.0-demo) or [download the MP4](https://github.com/lincwang123-bot/tapecommerce/releases/download/v0.1.0-demo/demo.mp4). The video labels live read-only data and local simulated payments throughout.
+[Watch the original 140-second demo release](https://github.com/lincwang123-bot/tapecommerce/releases/tag/v0.1.0-demo) or [download the MP4](https://github.com/lincwang123-bot/tapecommerce/releases/download/v0.1.0-demo/demo.mp4). It records the earlier showcase layout, before reuse of the six store themes. The video labels live read-only data and local simulated payments throughout; it is not evidence of mainnet payments.
 
 ## Run locally
 
@@ -40,7 +43,7 @@ Optional environment variables: `HOST`, `PORT`, `PUBLIC_ORIGIN`, `TAPECOMMERCE_D
 ## Verify the source
 
 ```sh
-node --test platform/test/tapecommerce-fx.test.mjs scripts/tapecommerce/readonly-adapter.test.mjs
+node --test platform/test/tapecommerce*.test.mjs scripts/tapecommerce/readonly-adapter.test.mjs web/tapecommerce-checkout.test.mjs
 npm --prefix showcase test
 cd backend
 go test -race ./internal/bootstrap/tapecommerce/... ./internal/modules/tapecommerce/... ./internal/architecture
@@ -68,6 +71,6 @@ See [competition notes](docs/competition.md), [protocol boundaries](docs/protoco
 
 ## Attribution and scope
 
-The underlying product/order/stock implementation is based on [Dujiao-Next](https://github.com/dujiao-next/dujiao-next), with its GPLv3 license preserved at [backend/LICENSE](backend/LICENSE). Activity-period additions include TapeOut identity verification, OKX conversion snapshots, the checkout contract, verified-payment/stock integration and this isolated showcase. The previous commerce UI, operational deployment scripts, production configuration and user data are intentionally outside this standalone demonstration.
+The underlying product/order/stock implementation is based on [Dujiao-Next](https://github.com/dujiao-next/dujiao-next), with its GPLv3 license preserved at [backend/LICENSE](backend/LICENSE). The six original themes come from [Coco9 Storefront UI](https://github.com/lincwang123-bot/coco9-storefront-ui), with its MIT license and image provenance retained under `web/storefront-ui/`. Activity-period additions include TapeOut identity verification, OKX conversion snapshots, the checkout contract, verified-payment/stock integration and this isolated showcase. Original operational deployment scripts, production configuration, full account/admin UI and user data are outside this standalone demonstration.
 
 TapeOut, TapeKit, OKX, Foundry and OpenZeppelin are independent upstream projects. This project does not claim their endorsement or security review. The independently authored Node/UI, pricing/error modules, read-only adapter, tests and documentation use **GPL-3.0-only**; see [LICENSE](LICENSE) and [LICENSING.md](LICENSING.md). Solidity files retain their existing MIT SPDX identifiers. The file inventory and SHA-256 hashes are recorded in `SOURCE_MANIFEST.json`.

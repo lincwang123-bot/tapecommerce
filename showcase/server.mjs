@@ -7,18 +7,20 @@ import { startSandbox } from './sandbox.mjs';
 import { signTrustedOrder } from '../platform/src/tapecommerce/quote.mjs';
 import { okxSpotRates } from '../platform/src/tapecommerce/okx-rate.mjs';
 import { readIdentity } from '../scripts/tapecommerce/readonly-adapter.mjs';
+import { storefrontRoutes } from './static-assets.mjs';
 
 const TTL = 45 * 60_000;
 const fail = (code, status = 400) => { throw Object.assign(new Error(code), { code, status }); };
 const digest = token => createHash('sha256').update(token).digest();
 const staticFiles = new Map([
-  ['/', ['index.html', 'text/html; charset=utf-8']],
-  ['/index.html', ['index.html', 'text/html; charset=utf-8']],
-  ['/app.js', ['app.js', 'text/javascript; charset=utf-8']],
-  ['/styles.css', ['styles.css', 'text/css; charset=utf-8']],
-  ['/i18n.js', ['i18n.js', 'text/javascript; charset=utf-8']],
-  ['/ui.js', ['ui.js', 'text/javascript; charset=utf-8']],
-  ['/mark.svg', ['mark.svg', 'image/svg+xml']],
+  ['/', ['./public/index.html', 'text/html; charset=utf-8']],
+  ['/index.html', ['./public/index.html', 'text/html; charset=utf-8']],
+  ['/app.js', ['./public/app.js', 'text/javascript; charset=utf-8']],
+  ['/styles.css', ['./public/styles.css', 'text/css; charset=utf-8']],
+  ['/i18n.js', ['./public/i18n.js', 'text/javascript; charset=utf-8']],
+  ['/ui.js', ['./public/ui.js', 'text/javascript; charset=utf-8']],
+  ['/mark.svg', ['./public/mark.svg', 'image/svg+xml']],
+  ...storefrontRoutes,
 ]);
 const productMeta = { title: { zh: '商店启动工具包', en: 'Store launch kit' }, description: { zh: '可编辑的单页数字商品模板与发布清单。完成演示订单后下载。', en: 'An editable digital-product page and launch checklist, delivered after your demo order.' }, format: 'HTML', filename: 'tapecommerce-store-kit.html' };
 const states = { quote_issued: 'quoted', submitted: 'submitted', detected: 'confirming', fulfillment_pending: 'confirming', delivered: 'delivered', review_required: 'review' };
@@ -65,7 +67,7 @@ export function createShowcase({ sandbox, rates = okxSpotRates, lookup = readIde
       if (req.method === 'GET' && url.pathname === '/healthz') return send(res, healthy ? 200 : 503, { status: healthy ? 'ok' : 'unavailable', sourceMode: 'isolated_evm' });
       if (req.method === 'GET' || req.method === 'HEAD') {
         const file = staticFiles.get(url.pathname);
-        if (file) { const body = await readFile(new URL(`./public/${file[0]}`, import.meta.url)); res.writeHead(200, { ...headers, 'content-type': file[1] }).end(req.method === 'HEAD' ? undefined : body); return; }
+        if (file) { const body = await readFile(new URL(file[0], import.meta.url)); res.writeHead(200, { ...headers, 'content-type': file[1] }).end(req.method === 'HEAD' ? undefined : body); return; }
       }
       if (!url.pathname.startsWith('/api/')) fail('not_found', 404);
       if (!healthy) fail('demo_unavailable', 503);

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "kind": "tapecommerce_public_source_release",
-  "createdAt": "2026-10-16T16:42:47.363Z",
+  "createdAt": "2026-10-16T17:21:28.871Z",
   "repository": "https://github.com/lincwang123-bot/tapecommerce",
   "license": "GPL-3.0-only for independent TapeCommerce Node/UI/modules/tests/docs; existing GPL backend and MIT Solidity licenses retained. See LICENSING.md.",
   "files": [
@@ -32,8 +32,8 @@
     },
     {
       "path": "backend/internal/app/bootstrap.go",
-      "bytes": 2755,
-      "sha256": "dbb4e2ee00092db28ed3ff5deeee5b931385b6b8795862f6b9613a0ca8c20f77"
+      "bytes": 2882,
+      "sha256": "9dd5088c5862b8653f534b5fb65c2f866142df30e0712b5e23fbd0ec8b10f6a9"
     },
     {
       "path": "backend/internal/app/chain_discovery_service.go",
@@ -57,13 +57,13 @@
     },
     {
       "path": "backend/internal/app/container/bootstrap.go",
-      "bytes": 3685,
-      "sha256": "15192ad231a6ff769ec5f729dd6c27830b3f6dff1150e7511e2f2feebeb1eb7e"
+      "bytes": 3977,
+      "sha256": "2f5d1ba9a5e703a79e9b8fe9f28377d3c06f98b679a2cfda46b95434a12aa208"
     },
     {
       "path": "backend/internal/app/container/container.go",
-      "bytes": 12347,
-      "sha256": "2bc5a4490ef122fed7e8a41bc55ec8667638d5e13f1a604fd9d75ca21b40c9d2"
+      "bytes": 12471,
+      "sha256": "28f0616141d34969bdab7f728022e08c9b5e69f89dc53ddc05923135ddc30742"
     },
     {
       "path": "backend/internal/app/container/google_runtime_settings_test.go",
@@ -137,13 +137,13 @@
     },
     {
       "path": "backend/internal/app/httpserver/middleware/commerce_launch_test.go",
-      "bytes": 4506,
-      "sha256": "a91edc0b06d04f41b4da0281865a57a7d8f1b4ac333b49046b641b2cbd1df017"
+      "bytes": 4767,
+      "sha256": "5f503bf45a19c8f60ed79ec0eb63a7ef5576b473724fd73b1d815a4b21c3444f"
     },
     {
       "path": "backend/internal/app/httpserver/middleware/commerce_launch.go",
-      "bytes": 2270,
-      "sha256": "61a86f96059b9459953a788a60b11e713159bf5c62994dc587fee088a0bb0fd4"
+      "bytes": 2418,
+      "sha256": "f8bbd733d86d8037d563dd3209bb3bcf07032ee2b9a2d15ef747d09d62ecde94"
     },
     {
       "path": "backend/internal/app/httpserver/middleware/compliance_middleware_test.go",
@@ -272,8 +272,8 @@
     },
     {
       "path": "backend/internal/app/httpserver/routes_storefront.go",
-      "bytes": 9013,
-      "sha256": "df67b8e060160401e7d8de37533f44f86f587d25a075d25d5d61786959bdaea1"
+      "bytes": 9310,
+      "sha256": "830f78239592c18ee3ed4e0c5bd309083a7fa3b975b569b5229467948ebd874e"
     },
     {
       "path": "backend/internal/app/httpserver/routes_upstream.go",
@@ -497,8 +497,8 @@
     },
     {
       "path": "backend/internal/architecture/payment_service_structure_test.go",
-      "bytes": 4490,
-      "sha256": "44f5ef10a8aa4d2034beb96f86acf98374d15f0756fc7cd5826e6c196e7b2767"
+      "bytes": 4522,
+      "sha256": "5c1db3c4f582503db75cadea7402de7d96d34f19a201d1bc185b236b8e73484c"
     },
     {
       "path": "backend/internal/architecture/procurement_order_structure_test.go",
@@ -537,8 +537,8 @@
     },
     {
       "path": "backend/internal/architecture/router_composition_structure_test.go",
-      "bytes": 2343,
-      "sha256": "08092367ef3c47c4715f82a339c9bc998145ed03ceacdd42735b1fdb6dba9f79"
+      "bytes": 2362,
+      "sha256": "d3dc7b2f9d9c17bb49c1e57ed9748650dbc5ae025b11edba0ecef84108922639"
     },
     {
       "path": "backend/internal/architecture/service_transaction_boundary_test.go",
@@ -817,8 +817,8 @@
     },
     {
       "path": "backend/internal/bootstrap/tapecommerce/bridge.go",
-      "bytes": 14450,
-      "sha256": "16b613ffe7bb28564bfbc5e8e5d8adad63533ce3f6655b830dbfe9fab0066fe2"
+      "bytes": 16907,
+      "sha256": "730ff5bdcaf88111259f472c076b2d25f9d4d140db0989da7b4af2a28ee5a457"
     },
     {
       "path": "backend/internal/bootstrap/tapecommerce/demo_http.go",
@@ -837,8 +837,33 @@
     },
     {
       "path": "backend/internal/bootstrap/tapecommerce/fulfillment.go",
-      "bytes": 3504,
-      "sha256": "b14ba0c9e53629852b61a590f90985b4bf02169dcf957d67cb27ce4c5bac6f4e"
+      "bytes": 3497,
+      "sha256": "c2e4612e1995a00544dec4b935ae6a7097a8d99f60b46b6d0e354b60719a40ea"
+    },
+    {
+      "path": "backend/internal/bootstrap/tapecommerce/live_http.go",
+      "bytes": 5602,
+      "sha256": "3a6985f084c2ef9d831fe1a4d65b63a538a28868c9d8ae2b445bde33050fb4e5"
+    },
+    {
+      "path": "backend/internal/bootstrap/tapecommerce/live_test.go",
+      "bytes": 16609,
+      "sha256": "24d6ee7c67109b57a2ceb0b7945f53284d276a6efd0838503b7c4fbf1d86e21e"
+    },
+    {
+      "path": "backend/internal/bootstrap/tapecommerce/live_worker.go",
+      "bytes": 1898,
+      "sha256": "675d05d8fb28cc6adcdaa75c491217d715f9d1d6f2fa2be989e396ba3d85b6d2"
+    },
+    {
+      "path": "backend/internal/bootstrap/tapecommerce/live.go",
+      "bytes": 12927,
+      "sha256": "5027dfb400444767e3fd7910e3387ba5d4dea7dfd12b92d2119d5b73fe6662db"
+    },
+    {
+      "path": "backend/internal/bootstrap/tapecommerce/signer.go",
+      "bytes": 4568,
+      "sha256": "4a304af045dc41427e574a8948b0b021cc7e564628c7995a635383077a283ac2"
     },
     {
       "path": "backend/internal/bootstrap/telegramauthcache/dependencies.go",
@@ -902,8 +927,13 @@
     },
     {
       "path": "backend/internal/config/config.go",
-      "bytes": 18264,
-      "sha256": "6f617898016500b11950751d2c5a9d2c13e388b18762d1202a112e317a69e517"
+      "bytes": 18770,
+      "sha256": "6f3fce36f7958c396c402fd7b8dbd174bd8bb8d99bbc739a03af9b6acf237527"
+    },
+    {
+      "path": "backend/internal/config/tapecommerce.go",
+      "bytes": 850,
+      "sha256": "abdd6e376ce6c9a5eb5f74e1df68299377d0cd78709a1624c4845459d7c9111f"
     },
     {
       "path": "backend/internal/constants/admin_login_event.go",
@@ -3812,8 +3842,8 @@
     },
     {
       "path": "backend/internal/modules/payment/application/payment_service_channel_rules.go",
-      "bytes": 10024,
-      "sha256": "9dbc128aaaee091b420ada00db8a43fea9a6c74d02285f2a39dd16a65985f6e5"
+      "bytes": 11267,
+      "sha256": "f60fb24f182f1f4efbfb2298ab45d051f9d7ae00b11b39a46b00c03521727f84"
     },
     {
       "path": "backend/internal/modules/payment/application/payment_service_confirmation.go",
@@ -3822,8 +3852,8 @@
     },
     {
       "path": "backend/internal/modules/payment/application/payment_service_create.go",
-      "bytes": 14283,
-      "sha256": "7871e888e8e616fe5dbd281896fc2682fb4f28493862012fcc7b6852e2a08967"
+      "bytes": 14540,
+      "sha256": "e20b6696014c581219979c4a92c84de13d2dfe05e86ddd24a0435ce6dc862e80"
     },
     {
       "path": "backend/internal/modules/payment/application/payment_service_gateway_order_test.go",
@@ -3842,8 +3872,8 @@
     },
     {
       "path": "backend/internal/modules/payment/application/payment_service_provider.go",
-      "bytes": 15541,
-      "sha256": "0b3a4b03b86d8daa41bbd29d13653b626fd41c8df40a4993ecc05e5310612b1c"
+      "bytes": 15948,
+      "sha256": "d305e414dc766db362bdc2b1f4ba698df9696b86eccac82bd23bf1f669e37f6c"
     },
     {
       "path": "backend/internal/modules/payment/application/payment_service_recharge.go",
@@ -3887,8 +3917,8 @@
     },
     {
       "path": "backend/internal/modules/payment/application/settlement/stock.go",
-      "bytes": 4610,
-      "sha256": "f044b46778169153f371696cdbf64ac41dddd263edc1b9e1f964fc69a7567eec"
+      "bytes": 4661,
+      "sha256": "5a738ee2b8acf830791770d56917995965351df51ddbd8aee342d3bda7733057"
     },
     {
       "path": "backend/internal/modules/payment/contract/chain.go",
@@ -5723,12 +5753,12 @@
     {
       "path": "backend/internal/modules/tapecommerce/application/service.go",
       "bytes": 4430,
-      "sha256": "8452933fc94d58c6d7b833a605524164443907a6f379ed8f625d00491467e72f"
+      "sha256": "f3370de96bf899b1edc4bed3d7e989f65c5d8c52e5cc4efe441c9a5630a6b64e"
     },
     {
       "path": "backend/internal/modules/tapecommerce/contract/ports.go",
-      "bytes": 1909,
-      "sha256": "e893f70fa8ebcce1b75f74dc70a01058c638d569a81c0861cdab17718b269c4f"
+      "bytes": 1901,
+      "sha256": "84e032b2ee8272f61eb77b12523906569a6a8f8666a89d52c8ce5254767ee81d"
     },
     {
       "path": "backend/internal/modules/tapecommerce/domain/fx_test.go",
@@ -5767,13 +5797,18 @@
     },
     {
       "path": "backend/internal/modules/tapecommerce/infrastructure/gormstore/admission.go",
-      "bytes": 4128,
-      "sha256": "40c195ae79413c320965dc109b2c4280e92c99454538b46667daabefeaa60b7c"
+      "bytes": 4274,
+      "sha256": "a495724f2de442297569ed8f5a01c19e351a4cd26a072e0cb03525ac36295d1e"
     },
     {
       "path": "backend/internal/modules/tapecommerce/infrastructure/gormstore/outbox.go",
       "bytes": 3089,
       "sha256": "7d9f39e14a28a328b559656ca8444f6157d2c5e869b061d6e85f0bcf9df8428c"
+    },
+    {
+      "path": "backend/internal/modules/tapecommerce/infrastructure/gormstore/query.go",
+      "bytes": 1316,
+      "sha256": "229947da639069c4c87420135f5b8147afc60ca13d9377ce628cce716baefac6"
     },
     {
       "path": "backend/internal/modules/tapecommerce/infrastructure/gormstore/store_test.go",
@@ -5787,8 +5822,8 @@
     },
     {
       "path": "backend/internal/modules/tapecommerce/README.md",
-      "bytes": 6957,
-      "sha256": "9aaa8756cf984e9a7a4f438a28575b8efb30113673c1a756b64907ceddd88b05"
+      "bytes": 9906,
+      "sha256": "c22383469eb993482e8cc3a3c1b5b0684ce5ade6a6bafcaed741548469309d06"
     },
     {
       "path": "backend/internal/modules/telegram/broadcast/application/errors.go",
@@ -6491,9 +6526,29 @@
       "sha256": "1c688b29ea76a4dd34e9e56bad78fdc222ba2b735dc7360f1abc44567e564fcb"
     },
     {
+      "path": "docs/live-payment-integration.md",
+      "bytes": 9228,
+      "sha256": "d5b3e84a9f74476ee5363e7c7e89abce7d9dd8a97d2ff60cb8d8309dba6cc1b3"
+    },
+    {
       "path": "docs/protocol.md",
       "bytes": 2392,
       "sha256": "d0772ea474a28587e33721f54520b26873d7ba37ac68e97b8851f7137390e2dc"
+    },
+    {
+      "path": "docs/quote-service.md",
+      "bytes": 9312,
+      "sha256": "e83e5d8fc57a7dfb201b0166a8e3de296b9e07021e19861a011c15a0aca8a8bf"
+    },
+    {
+      "path": "docs/template-payment-integration.json",
+      "bytes": 3630,
+      "sha256": "b755698ab0cf3b80ed129edab1703c1c67b1230328306f9ee89c56a79a2626cb"
+    },
+    {
+      "path": "docs/template-payment-integration.md",
+      "bytes": 2459,
+      "sha256": "7823e0264cdc4f19c099d0bd3e3345d37d3011b21cf08eb4242711e6fa3f01ea"
     },
     {
       "path": "LICENSE",
@@ -6517,8 +6572,8 @@
     },
     {
       "path": "LICENSING.md",
-      "bytes": 2077,
-      "sha256": "89b3d5d68b51bd880743706f3a4ea68166925f6a1705a79e69477a1bcc738a86"
+      "bytes": 2386,
+      "sha256": "47beba8ceb2c1056bc992dc575ebe0fa9cf7535205627346f4329758b8fb1d40"
     },
     {
       "path": "platform/package-lock.json",
@@ -6527,8 +6582,8 @@
     },
     {
       "path": "platform/package.json",
-      "bytes": 271,
-      "sha256": "1c2dbd643976de4d25014782155db34b8447e5b973c312ea92d165668b3cbed6"
+      "bytes": 311,
+      "sha256": "7884b3b48c8f55b6ae0e60fb9a821c4040604ec76f71b3cfb5d17e02a0d8b884"
     },
     {
       "path": "platform/src/tapecommerce/errors.mjs",
@@ -6546,6 +6601,21 @@
       "sha256": "ec6986bedc933fb18d529402a1b7ffc2f32bd622088db0ca528ef54f0130b179"
     },
     {
+      "path": "platform/src/tapecommerce/quote-config.mjs",
+      "bytes": 4412,
+      "sha256": "40b7c5e1d33e9d275bf95cc5b4e2045bd0c8a735510a706041697dc3d9874e91"
+    },
+    {
+      "path": "platform/src/tapecommerce/quote-main.mjs",
+      "bytes": 1398,
+      "sha256": "d2b38d081378e8c7b12f869a5f0af5af623cd14f3c489c6bae94f41a5d6f7531"
+    },
+    {
+      "path": "platform/src/tapecommerce/quote-server.mjs",
+      "bytes": 10016,
+      "sha256": "99ac32264425f9fdf8421eff9f2f4c8892e251aff4d5c0cb630387556cb460a4"
+    },
+    {
       "path": "platform/src/tapecommerce/quote.mjs",
       "bytes": 3345,
       "sha256": "11e382067f28dc76f217cab9a5b3227484a6c15526a4a159ec2f841a139f445f"
@@ -6556,9 +6626,14 @@
       "sha256": "e50a22e42bd4f4e9a6cfaf7a44c83c55ab2c77e15dd9ca6d705d5b91787f81b5"
     },
     {
+      "path": "platform/test/tapecommerce-quote-server.test.mjs",
+      "bytes": 12808,
+      "sha256": "0cd9987e8c0692fabb3282d252854e967ad7136d14f935bd159a78a8f4313804"
+    },
+    {
       "path": "README.md",
-      "bytes": 7140,
-      "sha256": "8ec8f973cdfc80748646e6d6a796068fe7a506cdf75a41234d5b9c52c30bc012"
+      "bytes": 8401,
+      "sha256": "0b6d3e3c46feccf070d64c1954a9eaac8eb77f27049ea2c8d45348192093192d"
     },
     {
       "path": "scripts/tapecommerce/readonly-adapter.mjs",
@@ -6592,8 +6667,8 @@
     },
     {
       "path": "showcase/public/app.js",
-      "bytes": 34012,
-      "sha256": "a350d5aff5dec98ae0e6e3df74e55859a62ab616f86c997fc9f6d7c3c9c0e862"
+      "bytes": 37764,
+      "sha256": "b0d4651ef755c24f03c8c177ef97666ee900a6b329cf0d3fd88b470663959120"
     },
     {
       "path": "showcase/public/i18n.js",
@@ -6602,8 +6677,8 @@
     },
     {
       "path": "showcase/public/index.html",
-      "bytes": 1222,
-      "sha256": "ad87f91acef718ea0fceabd69cb97bc29eccd0f53d44e3d30049db7e5579ae9c"
+      "bytes": 1389,
+      "sha256": "e0067260dba0afa1709cbca5ebdaef45a1c4aed5b4d1dbe788317cfe052faaf2"
     },
     {
       "path": "showcase/public/mark.svg",
@@ -6612,8 +6687,8 @@
     },
     {
       "path": "showcase/public/styles.css",
-      "bytes": 29031,
-      "sha256": "c2ef782292d90e26a3d7065c333fc9bfde76842e047c06592195bc733cc0a13d"
+      "bytes": 6172,
+      "sha256": "79b93ad5b262df788f2659b357f06e2cc6854d75a994667fead6f8391302bebe"
     },
     {
       "path": "showcase/public/ui.js",
@@ -6627,8 +6702,13 @@
     },
     {
       "path": "showcase/server.mjs",
-      "bytes": 15199,
-      "sha256": "ea38f1300ca3e96687aa2af293bb8917c2a3df2590272e89a124826991a0378d"
+      "bytes": 15327,
+      "sha256": "761ba71ff2da5e20a0aad8c4bbefcff818030798568dbf852c9ca363ab564aa2"
+    },
+    {
+      "path": "showcase/static-assets.mjs",
+      "bytes": 1167,
+      "sha256": "0188d1a045762807c176229e9cec965df7f349f1a6331f99f0fc8ac3413a6179"
     },
     {
       "path": "showcase/test/lifecycle.test.mjs",
@@ -6637,16 +6717,186 @@
     },
     {
       "path": "showcase/test/server.test.mjs",
-      "bytes": 6492,
-      "sha256": "99c7ced00655a1fbb7d0de64d6e764b4cb0566a22bb43d3dd0323e12a5798967"
+      "bytes": 7413,
+      "sha256": "9806ae6e2ee652ab14b3e700b53a476de5887532c2488830191a350daa00b480"
+    },
+    {
+      "path": "web/factory-theme.js",
+      "bytes": 466,
+      "sha256": "d9601bf3561e12e23dada630576729cc6562b233f0fec82a6584a2fc5ea1865d"
+    },
+    {
+      "path": "web/package.json",
+      "bytes": 197,
+      "sha256": "1d8bbdd0f96e28d834d4eeddfea6b28400a2d2f5bff2d41d684ae909f2a2b84d"
+    },
+    {
+      "path": "web/storefront-ui/ASSETS.md",
+      "bytes": 5229,
+      "sha256": "b8473ec49e26e8f3182395d4b6143879a3f3c12998d31144ce731f66c35a6b6c"
+    },
+    {
+      "path": "web/storefront-ui/assets/arcade-1536.webp",
+      "bytes": 237764,
+      "sha256": "67474f34440ad0f23cfea5618b98e8629b4817a941e9a50a43d5fdea986ff97e"
+    },
+    {
+      "path": "web/storefront-ui/assets/arcade-768.webp",
+      "bytes": 102930,
+      "sha256": "bc31cab8fbba8bdfbe1c1ff9010e62b7403763269acc316eeeedcdbbab2b55a6"
+    },
+    {
+      "path": "web/storefront-ui/assets/editorial-1536.webp",
+      "bytes": 177690,
+      "sha256": "b94ce41b3fe8d8830498425b78e61852958b33b4dce5871e39a4a120bf33a9f9"
+    },
+    {
+      "path": "web/storefront-ui/assets/editorial-768.webp",
+      "bytes": 54678,
+      "sha256": "c0c90935c50bd458380c1ebd42474b13a6a4323993620e79eb7d50d6f9efcd4d"
+    },
+    {
+      "path": "web/storefront-ui/assets/minimal-1536.webp",
+      "bytes": 48012,
+      "sha256": "b8298369cba66db9061309f31a5194b949b4d9fbe37cdf5634a8f36de8b32db9"
+    },
+    {
+      "path": "web/storefront-ui/assets/minimal-768.webp",
+      "bytes": 17470,
+      "sha256": "2e014c720078c61dbc0c8bb0042c2558f744161668a3a3d1bd52d2aa6d8aa427"
+    },
+    {
+      "path": "web/storefront-ui/assets/neon-1536.webp",
+      "bytes": 144336,
+      "sha256": "2d00195d8ea682b78b5c016101ffdeb4371e7ae51f53048df128cf0f1bfd35bb"
+    },
+    {
+      "path": "web/storefront-ui/assets/neon-768.webp",
+      "bytes": 53192,
+      "sha256": "7fd9f9725c99eb424fa5ab9ffffcc7186683d69c0fdd4f82e58df75ea72ac5dc"
+    },
+    {
+      "path": "web/storefront-ui/assets/orbital-1536.webp",
+      "bytes": 253160,
+      "sha256": "5c2a7728eb6b5d3bcb835ff6cb56f335d635bc7958c1eba6cdf56492bcbd73fd"
+    },
+    {
+      "path": "web/storefront-ui/assets/orbital-768.webp",
+      "bytes": 80074,
+      "sha256": "e3a2293f449c87334525220132878aaf18b9439f1351b21b7c813dd7630abe29"
+    },
+    {
+      "path": "web/storefront-ui/assets/warm-1536.webp",
+      "bytes": 215536,
+      "sha256": "fc55df72783bc343384b1e746bd9435ce4acb0982a8133f29a2f2bc24b61b9bd"
+    },
+    {
+      "path": "web/storefront-ui/assets/warm-768.webp",
+      "bytes": 66944,
+      "sha256": "3b1d849263efb5fb603176fa6b956f86abca364a93ab790071e6ee7a2ef8f84d"
+    },
+    {
+      "path": "web/storefront-ui/commerce.js",
+      "bytes": 1272,
+      "sha256": "1c8d50def27ff3a209288cb4416491c4386f43bcf8c98d83954a506b8a887538"
+    },
+    {
+      "path": "web/storefront-ui/index.js",
+      "bytes": 2046,
+      "sha256": "77857c89be70131efcf7152649442f6f763b76a910c51ef9eb1821dbe43c20bb"
+    },
+    {
+      "path": "web/storefront-ui/laptop.js",
+      "bytes": 4719,
+      "sha256": "52f648b01c40417990834ddafcdd42fe7a64d5b79c7ab2ef966d6033367a5ede"
+    },
+    {
+      "path": "web/storefront-ui/LICENSE",
+      "bytes": 1075,
+      "sha256": "5c8887706e6195c0b6b1341271533e6de3f116cc605a63b567d8d0da0229441a"
+    },
+    {
+      "path": "web/storefront-ui/navigation.js",
+      "bytes": 1311,
+      "sha256": "a8fb900e62b92a7ee2af1fe3e819a75a3ed3ac4204114f3ddbc9efc6a3bf65ca"
+    },
+    {
+      "path": "web/storefront-ui/registry.js",
+      "bytes": 1034,
+      "sha256": "2a5b68c29aa064b49933d558503d2b988561687cf703af19563e0fc01cd586b2"
+    },
+    {
+      "path": "web/storefront-ui/shared.js",
+      "bytes": 2931,
+      "sha256": "7b341c9ebaf0824a9c56852ba289c698df20cac26261b7e571770d191af57fed"
+    },
+    {
+      "path": "web/storefront-ui/styles.css",
+      "bytes": 31741,
+      "sha256": "b6a1911395dcad94839948762bba92c0e755c90449057122a43fbb18767e5d1f"
+    },
+    {
+      "path": "web/storefront-ui/themes/arcade.js",
+      "bytes": 461,
+      "sha256": "7c2a89fe02219f07350c1a94b908068dedb6458406efd8e173ddaa881369a47d"
+    },
+    {
+      "path": "web/storefront-ui/themes/editorial.js",
+      "bytes": 728,
+      "sha256": "4ffb4204dabfe390ba5cd2086d9a3acf5e7cce85d690e635693ac637b405fdfb"
+    },
+    {
+      "path": "web/storefront-ui/themes/minimal.js",
+      "bytes": 1514,
+      "sha256": "41ef721f1080b50960f1da56fdcacaf875887af8fc360fbfed11ce99d064c88e"
+    },
+    {
+      "path": "web/storefront-ui/themes/neon.js",
+      "bytes": 490,
+      "sha256": "29912951d89558dba28f5fb38bba271b54ffcd94c4bb0ce7417d8721bcb1fa49"
+    },
+    {
+      "path": "web/storefront-ui/themes/orbital.js",
+      "bytes": 486,
+      "sha256": "5d58d106442db9eb2f5bb1d9faa9778a35ae0df94d7e9b6a5060cc7bd8d49faf"
+    },
+    {
+      "path": "web/storefront-ui/themes/warm.js",
+      "bytes": 529,
+      "sha256": "a06db01490b37968fd2859d23362c8e6f9834c77d1e1be9c92d0eceab929f895"
+    },
+    {
+      "path": "web/storefront-ui/UPSTREAM.md",
+      "bytes": 662,
+      "sha256": "cd5099bf521f6b7479333261efa1cf7d23d4e8ba596d151c07564d6a72063855"
+    },
+    {
+      "path": "web/styles.css",
+      "bytes": 33914,
+      "sha256": "504527f2f3f630425c59e416bd0c3aa7a972a0d61b942882b52059c3daea6b49"
+    },
+    {
+      "path": "web/tapecommerce-checkout.js",
+      "bytes": 14946,
+      "sha256": "bb0d762189c99742ebd5fb4b8da3d7dea0a74e75d2ca343c1f6d0912eb9f1438"
+    },
+    {
+      "path": "web/tapecommerce-checkout.test.mjs",
+      "bytes": 10737,
+      "sha256": "71c699700cf2fabf639747d117c02d841a5888d6b19fdd5ffe397dd67c5dfe98"
+    },
+    {
+      "path": "web/testdata/tapecommerce-abi.json",
+      "bytes": 1334,
+      "sha256": "ab6935344f086c2b9cecc1a5c0d95509b8f66090f0d1e0b3688afba143967bec"
     }
   ],
   "scan": {
     "scope": "Allowlisted source bytes only; no production secret files or Git history read. Reviewed exceptions are matched by exact file hash; this is not a guarantee against every possible secret.",
-    "personalNeedlesLoaded": 3,
+    "personalNeedlesLoaded": 4,
     "blockingFindings": 0,
     "reviewFindings": 0,
-    "reviewedFindings": 19,
+    "reviewedFindings": 20,
     "findings": [
       {
         "path": "backend/internal/app/httpserver/content_routes_test.go",
@@ -6780,22 +7030,14 @@
         "blocking": false,
         "reviewed": true,
         "reason": "Negative URL-validation test using synthetic user/password on example, localhost or public test addresses; no actual account credential."
+      },
+      {
+        "path": "platform/test/tapecommerce-quote-server.test.mjs",
+        "kind": "credential_like_literal_review",
+        "blocking": false,
+        "reviewed": true,
+        "reason": "Explicit synthetic-secret-for-tests literal used only by loopback HTTP fixtures; signing wallets are freshly generated and temporary files are removed."
       }
     ]
-  },
-  "verification": {
-    "verifiedAt": "2026-10-16T16:44:01.660151+00:00",
-    "nodeTests": {
-      "passed": 51,
-      "failed": 0,
-      "skipped": 0
-    },
-    "backendGoRaceAndArchitecture": "PASS on identical backend source",
-    "linuxBuildSha256": "af37fc4256a00b608c6051c79bfcc6862477b955672a85989116400e9e60006d",
-    "compiler": "go1.26.4 darwin/arm64",
-    "target": "CGO_ENABLED=0 GOOS=linux GOARCH=amd64 -trimpath",
-    "runtimeCleanup": "Lifecycle test recorded the owned Anvil PID and verified ESRCH after missing bridge cleanup; test process exited 0.",
-    "backendGoSourceUnchangedFromVerifiedExport": true,
-    "documentationChanges": "Final video timeline, upstream README attribution and accepted public showcase availability clarified; Go/Node implementation and dependency versions unchanged."
   }
 }

@@ -3,6 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { createShowcase } from '../server.mjs';
+import { storefrontRoutes } from '../static-assets.mjs';
 const { Wallet } = createRequire(new URL('../../platform/package.json', import.meta.url))('ethers');
 
 async function fixture(t) {
@@ -34,8 +35,24 @@ async function fixture(t) {
   };
   const create = async () => (await request('/api/demo/orders', { method: 'POST', body: JSON.stringify({ productId: '1' }) })).data;
   const orderRequest = (value, action = '', method = 'GET', body = {}) => request(`/api/demo/orders/${value.order.id}${action ? '/' + action : ''}`, { method, headers: { 'x-demo-token': value.token }, ...(method === 'POST' ? { body: JSON.stringify(body) } : {}) });
-  return { request, create, orderRequest, invoices, pays: () => pays, claims: () => claims, advance: ms => { clock += ms; }, loseSubmit: () => { submitFailures = 1; } };
+  return { base, request, create, orderRequest, invoices, pays: () => pays, claims: () => claims, advance: ms => { clock += ms; }, loseSubmit: () => { submitFailures = 1; } };
 }
+
+test('serves the six existing templates and assets, keeping operational web files private', async t => {
+  const f = await fixture(t);
+  for (const [url, [, type]] of storefrontRoutes) {
+    const response = await fetch(f.base + url);
+    assert.equal(response.status, 200, url);
+    assert.equal(response.headers.get('content-type'), type, url);
+    assert.ok((await response.arrayBuffer()).byteLength > 0, url);
+  }
+  for (const url of ['/api.js', '/web/app.js', '/.env', '/storefront-ui/../api.js', '/storefront-ui/%2e%2e%2fapi.js', '/factory-storefront.js', '/tapecommerce-checkout.js']) {
+    assert.equal((await fetch(f.base + url)).status, 404, url);
+  }
+  const head = await fetch(f.base + '/storefront-ui/assets/minimal-768.webp', { method: 'HEAD' });
+  assert.equal(head.status, 200);
+  assert.equal((await head.arrayBuffer()).byteLength, 0);
+});
 
 test('checkout binds authoritative amount, denies early/cross-session delivery and pays once', async t => {
   const f = await fixture(t), a = await f.create(), b = await f.create();

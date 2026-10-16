@@ -36,7 +36,7 @@ type Fulfiller interface {
 // Returning nil means the stock effect committed; completion may be atomic too.
 // A network call, a second Check, or a process-local mutex does not satisfy this
 // contract. bootstrap/tapecommerce.Bridge implements this for original local-stock
-// orders; it is not registered in the production container. StockFulfiller
+// orders through default-disabled live composition. StockFulfiller
 // intentionally lacks this method.
 type AtomicAdmission interface {
 	AdmitAndFulfill(context.Context, domain.Job) error

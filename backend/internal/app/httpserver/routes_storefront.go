@@ -4,6 +4,7 @@ import (
 	"github.com/dujiao-next/internal/app/container"
 	"github.com/dujiao-next/internal/app/httpserver/middleware"
 	affiliatebootstrap "github.com/dujiao-next/internal/bootstrap/affiliate"
+	tapecommercebootstrap "github.com/dujiao-next/internal/bootstrap/tapecommerce"
 	"github.com/dujiao-next/internal/config"
 	affiliatetransport "github.com/dujiao-next/internal/modules/affiliate/transport/http"
 	apicredentialtransport "github.com/dujiao-next/internal/modules/apicredential/transport/http"
@@ -73,6 +74,7 @@ func registerStorefrontRoutes(
 	public := storefront.Group("/public")
 	{
 		publicconfigtransport.RegisterPublicRoutes(public, publicConfigHandler)
+		tapecommercebootstrap.RegisterPublicRoutes(public, c.TapeCommerce)
 		producthttp.RegisterPublicRoutes(public, publicCatalogHandler)
 		categoryhttp.RegisterPublicRoutes(public, publicCategoryHandler)
 		contenttransport.RegisterPublicRoutes(public, publicContentHandler)
@@ -98,6 +100,8 @@ func registerStorefrontRoutes(
 		paymenttransport.RegisterGuestWriteRoutes(guestWrite, paymentWriteHandler)
 	}
 
+	tapecommercebootstrap.RegisterGuestRoutes(guestRead, guestWrite, c.TapeCommerce)
+
 	// 用户认证接口
 	auth := storefront.Group("/auth")
 	{
@@ -115,6 +119,7 @@ func registerStorefrontRoutes(
 	user := storefront.Group("")
 	user.Use(middleware.UserJWTAuthMiddleware(cfg.UserJWT.SecretKey, c.UserStore))
 	{
+		tapecommercebootstrap.RegisterUserRoutes(user, c.TapeCommerce)
 		userauthtransport.RegisterUserProfileRoutes(user, userProfileHandler)
 		auditlogtransport.RegisterUserRoutes(user, userAuditLogHandler)
 		userauthtransport.RegisterUserPasswordRoutes(user, userPasswordHandler)

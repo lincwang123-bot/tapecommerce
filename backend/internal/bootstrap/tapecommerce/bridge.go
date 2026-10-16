@@ -23,10 +23,11 @@ import (
 	"gorm.io/gorm"
 )
 
-// Bridge is opt-in and has no live container/router registration. The only
-// executable composition is the isolated loopback demo command. All quote
-// methods are private server-to-server ports, never browser price inputs.
+// Bridge owns atomic admission for both explicit live composition and the
+// isolated demo. Production HTTP derives Owner from the original order auth;
+// signed quotes come only from the private signer, never browser price inputs.
 type Bridge struct {
+	ChannelPolicy                                       func(*gorm.DB, *orderdomain.Order, *paymentdomain.PaymentChannel) error
 	Enabled                                             bool
 	DB                                                  *gorm.DB
 	GuestSecret, ShopID, Checkout, Merchant, TenantHash string
@@ -36,6 +37,21 @@ type Bridge struct {
 }
 
 var _ tapecontract.AtomicAdmission = (*Bridge)(nil)
+
+// Owner is constructed only after the original member/guest order authorization.
+// It is never decoded from a browser request. Guest ownership is scoped to one order.
+type Owner struct {
+	OrderID uint
+	UserID  uint
+	Guest   bool
+}
+
+func (o Owner) valid() bool {
+	return o.OrderID > 0 && ((o.UserID > 0 && !o.Guest) || (o.UserID == 0 && o.Guest))
+}
+func (o Owner) owns(order *orderdomain.Order) bool {
+	return o.valid() && order != nil && order.ID == o.OrderID && order.UserID == o.UserID && (!o.Guest || (order.GuestEmail != "" && order.GuestPassword != "")) && order.ResellerID == nil
+}
 
 type PreparedQuote struct {
 	OrderID     uint   `json:"orderId"`
@@ -83,11 +99,15 @@ func (b *Bridge) service() tapeapp.Service {
 }
 
 func (b *Bridge) Prepare(ctx context.Context, buyer, orderID uint, payer string) (PreparedQuote, error) {
+	return b.PrepareOwned(ctx, Owner{OrderID: orderID, UserID: buyer}, payer)
+}
+func (b *Bridge) PrepareOwned(ctx context.Context, owner Owner, payer string) (PreparedQuote, error) {
+	buyer, orderID := owner.UserID, owner.OrderID
 	var result PreparedQuote
 	if err := b.ready(); err != nil {
 		return result, err
 	}
-	if buyer == 0 || !domain.ValidHex(payer, 20) || domain.IsZeroHex(payer) {
+	if !owner.valid() || !domain.ValidHex(payer, 20) || domain.IsZeroHex(payer) {
 		return result, domain.ErrInvalid
 	}
 	err := b.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
@@ -95,13 +115,13 @@ func (b *Bridge) Prepare(ctx context.Context, buyer, orderID uint, payer string)
 		if err != nil {
 			return err
 		}
-		if o == nil || o.UserID != buyer {
+		if !owner.owns(o) {
 			return domain.ErrNotFound
 		}
 		if settlement.ValidateOrder(o, buyer, o.TotalAmount.String(), time.Now().Add(60*time.Second)) != nil {
 			return domain.ErrReview
 		}
-		if err := tapestore.New(tx).Prepare(ctx, tapestore.Preparation{ShopID: b.ShopID, OrderID: orderID, BuyerID: buyer, Payer: payer}); err != nil {
+		if err := tapestore.New(tx).Prepare(ctx, tapestore.Preparation{ShopID: b.ShopID, OrderID: orderID, BuyerID: buyer, Guest: owner.Guest, Payer: payer}); err != nil {
 			return err
 		}
 		result = PreparedQuote{OrderID: orderID, BuyerID: buyer, Tenant: b.ShopID, Currency: o.Currency, AmountUSDT: o.TotalAmount.String(), Status: "pending", Payer: strings.ToLower(payer), ExpiresAtMS: o.ExpiresAt.UnixMilli()}
@@ -114,15 +134,19 @@ func (b *Bridge) Prepare(ctx context.Context, buyer, orderID uint, payer string)
 // It independently validates math, fixed instance identities, pinned payer,
 // buyer ownership, current DB amount and lifetime. The signature is public audit
 // material, not proof that a browser supplied quote is trusted. No HTTP public
-// route in the production service calls this method.
+// route in the production service accepts an invoice or signature input.
 func (b *Bridge) Persist(ctx context.Context, buyer uint, i domain.Invoice, signature string) (QuoteResult, error) {
+	return b.PersistOwned(ctx, Owner{OrderID: i.OrderID, UserID: buyer}, i, signature)
+}
+func (b *Bridge) PersistOwned(ctx context.Context, owner Owner, i domain.Invoice, signature string) (QuoteResult, error) {
+	buyer := owner.UserID
 	var result QuoteResult
 	if err := b.ready(); err != nil {
 		return result, err
 	}
 	i = i.Normalize()
 	signature = strings.ToLower(signature)
-	if buyer == 0 || i.ShopID != b.ShopID || i.Checkout != strings.ToLower(b.Checkout) || i.Merchant != strings.ToLower(b.Merchant) || i.TenantHash != strings.ToLower(b.TenantHash) || !domain.ValidHex(signature, 65) || (signature[len(signature)-2:] != "1b" && signature[len(signature)-2:] != "1c") {
+	if !owner.valid() || owner.OrderID != i.OrderID || i.ShopID != b.ShopID || i.Checkout != strings.ToLower(b.Checkout) || i.Merchant != strings.ToLower(b.Merchant) || i.TenantHash != strings.ToLower(b.TenantHash) || !domain.ValidHex(signature, 65) || (signature[len(signature)-2:] != "1b" && signature[len(signature)-2:] != "1c") {
 		return result, domain.ErrInvalid
 	}
 	if err := i.Validate(); err != nil {
@@ -134,7 +158,7 @@ func (b *Bridge) Persist(ctx context.Context, buyer uint, i domain.Invoice, sign
 		if err != nil {
 			return err
 		}
-		if o == nil || o.UserID != buyer {
+		if !owner.owns(o) {
 			return domain.ErrNotFound
 		}
 		ts := tapestore.New(tx)
@@ -144,7 +168,7 @@ func (b *Bridge) Persist(ctx context.Context, buyer uint, i domain.Invoice, sign
 			if e != nil {
 				return e
 			}
-			if old.Invoice != i || bind.BuyerID != buyer || bind.Signature != signature {
+			if old.Invoice != i || bind.BuyerID != buyer || bind.Guest != owner.Guest || bind.Signature != signature {
 				return domain.ErrConflict
 			}
 			result = QuoteResult{i.InvoiceID, bind.PaymentID, old.State}
@@ -164,7 +188,7 @@ func (b *Bridge) Persist(ctx context.Context, buyer uint, i domain.Invoice, sign
 		if err != nil {
 			return err
 		}
-		if prepared.BuyerID != buyer || prepared.Payer != i.Payer {
+		if prepared.BuyerID != buyer || prepared.Guest != owner.Guest || prepared.Payer != i.Payer {
 			return domain.ErrConflict
 		}
 		channel, err := ports.PaymentChannels().GetByID(b.ChannelID)
@@ -173,6 +197,11 @@ func (b *Bridge) Persist(ctx context.Context, buyer uint, i domain.Invoice, sign
 		}
 		if channel == nil || !channel.IsActive || channel.ProviderType != "tapecommerce" || channel.ChannelType != "okb" || !channel.FeeRate.IsZero() || !channel.FixedFee.IsZero() {
 			return domain.ErrDisabled
+		}
+		if b.ChannelPolicy != nil {
+			if err := b.ChannelPolicy(tx, o, channel); err != nil {
+				return err
+			}
 		}
 		// The unique (shop, order) key prevents quote refresh from stranding any
 		// still-payable historical signature. Everything rolls back on conflict.
@@ -183,7 +212,7 @@ func (b *Bridge) Persist(ctx context.Context, buyer uint, i domain.Invoice, sign
 		if err := ports.Payments().Create(payment); err != nil {
 			return err
 		}
-		if err := ts.Bind(ctx, tapestore.Binding{InvoiceID: i.InvoiceID, BuyerID: buyer, PaymentID: payment.ID, Signature: signature}); err != nil {
+		if err := ts.Bind(ctx, tapestore.Binding{InvoiceID: i.InvoiceID, BuyerID: buyer, Guest: owner.Guest, PaymentID: payment.ID, Signature: signature}); err != nil {
 			return err
 		}
 		result = QuoteResult{i.InvoiceID, payment.ID, domain.QuoteIssued}
@@ -193,6 +222,16 @@ func (b *Bridge) Persist(ctx context.Context, buyer uint, i domain.Invoice, sign
 }
 
 func (b *Bridge) authorized(ctx context.Context, buyer uint, id string) (domain.Payment, tapestore.Binding, error) {
+	if err := b.ready(); err != nil {
+		return domain.Payment{}, tapestore.Binding{}, err
+	}
+	p, err := tapestore.New(b.DB).Get(ctx, b.ShopID, id)
+	if err != nil {
+		return p, tapestore.Binding{}, err
+	}
+	return b.authorizedOwned(ctx, Owner{OrderID: p.Invoice.OrderID, UserID: buyer}, id)
+}
+func (b *Bridge) authorizedOwned(ctx context.Context, owner Owner, id string) (domain.Payment, tapestore.Binding, error) {
 	if err := b.ready(); err != nil {
 		return domain.Payment{}, tapestore.Binding{}, err
 	}
@@ -209,22 +248,36 @@ func (b *Bridge) authorized(ctx context.Context, buyer uint, id string) (domain.
 	if err != nil {
 		return p, bind, err
 	}
-	if buyer == 0 || bind.BuyerID != buyer || o == nil || o.UserID != buyer || o.ResellerID != nil {
+	if !owner.owns(o) || bind.BuyerID != owner.UserID || bind.Guest != owner.Guest {
 		return domain.Payment{}, tapestore.Binding{}, domain.ErrNotFound
 	}
 	return p, bind, nil
 }
 func (b *Bridge) Submit(ctx context.Context, buyer uint, id, hash string) (InvoiceStatus, error) {
-	if _, _, err := b.authorized(ctx, buyer, id); err != nil {
+	p, _, err := b.authorized(ctx, buyer, id)
+	if err != nil {
+		return InvoiceStatus{}, err
+	}
+	return b.SubmitOwned(ctx, Owner{OrderID: p.Invoice.OrderID, UserID: buyer}, id, hash)
+}
+func (b *Bridge) SubmitOwned(ctx context.Context, owner Owner, id, hash string) (InvoiceStatus, error) {
+	if _, _, err := b.authorizedOwned(ctx, owner, id); err != nil {
 		return InvoiceStatus{}, err
 	}
 	if err := b.service().Submit(ctx, id, hash); err != nil {
 		return InvoiceStatus{}, err
 	}
-	return b.Status(ctx, buyer, id)
+	return b.StatusOwned(ctx, owner, id)
 }
 func (b *Bridge) Status(ctx context.Context, buyer uint, id string) (InvoiceStatus, error) {
-	p, bind, err := b.authorized(ctx, buyer, id)
+	p, _, err := b.authorized(ctx, buyer, id)
+	if err != nil {
+		return InvoiceStatus{}, err
+	}
+	return b.StatusOwned(ctx, Owner{OrderID: p.Invoice.OrderID, UserID: buyer}, id)
+}
+func (b *Bridge) StatusOwned(ctx context.Context, owner Owner, id string) (InvoiceStatus, error) {
+	p, bind, err := b.authorizedOwned(ctx, owner, id)
 	if err != nil {
 		return InvoiceStatus{}, err
 	}
@@ -340,7 +393,7 @@ func (b *Bridge) AdmitAndFulfill(ctx context.Context, j domain.Job) error {
 		if err != nil {
 			return err
 		}
-		if p.Invoice.OrderID != j.OrderID || bind.BuyerID == 0 || payment == nil || payment.ChannelID != b.ChannelID || p.Invoice.Checkout != strings.ToLower(b.Checkout) || p.Invoice.Merchant != strings.ToLower(b.Merchant) || p.Invoice.TenantHash != strings.ToLower(b.TenantHash) {
+		if p.Invoice.OrderID != j.OrderID || !(Owner{OrderID: j.OrderID, UserID: bind.BuyerID, Guest: bind.Guest}).owns(o) || payment == nil || payment.ChannelID != b.ChannelID || p.Invoice.Checkout != strings.ToLower(b.Checkout) || p.Invoice.Merchant != strings.ToLower(b.Merchant) || p.Invoice.TenantHash != strings.ToLower(b.TenantHash) {
 			return domain.ErrReview
 		}
 		paidAt := time.Unix(int64(p.Evidence.PaidAt), 0)

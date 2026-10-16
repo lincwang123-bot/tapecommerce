@@ -6,7 +6,7 @@
     "node": ">=22.13"
   },
   "scripts": {
-    "test": "node --test test/tapecommerce-fx.test.mjs"
+    "test": "node --test test/tapecommerce-fx.test.mjs test/tapecommerce-quote-server.test.mjs"
   },
   "dependencies": {
     "ethers": "6.17.0"

@@ -9,8 +9,8 @@ import (
 	"time"
 )
 
-// Service is deliberately not registered in the live application. Enabling it
-// requires a trusted quote/order bridge and an approved deployed checkout.
+// Service is enabled only by explicit live or isolated-demo composition.
+// Live operation requires the trusted quote/order bridge and deployed checkout.
 type Service struct {
 	Enabled   bool
 	ShopID    string

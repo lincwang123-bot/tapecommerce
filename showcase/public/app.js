@@ -1,9 +1,19 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import {renderStorefront, renderProduct, themes, themeFor} from '/storefront-ui/index.js';
+import {bindNavigation} from '/storefront-ui/navigation.js';
+import {bindLaptop} from '/storefront-ui/laptop.js';
+import {commerceHeading, commerceColumns, purchaseConfirmation, orderSummary} from '/storefront-ui/commerce.js';
 import { copy } from './i18n.js';
 import { escapeHTML as e, localized, formatWei, exactOKB, explorerAddress, remainingSeconds,
   PENDING_STATES, createApi, readSession, saveSession, clearSession, validatedOrder, downloadFilename } from './ui.js';
 
-const root = document.querySelector('#app');
+const root = document.body;
+const main = document.querySelector('main');
+let stopNavigation = () => {}, stopLaptop = () => {};
+let searchText = '';
+let selectedCategory = '';
+let theme = 'minimal';
+try { theme = themeFor(sessionStorage.getItem('tapecommerce-demo-theme')).id; } catch {}
 const announcer = document.querySelector('#announcer');
 const api = createApi();
 let disposed = false;
@@ -76,38 +86,6 @@ function quoteFor(order = state.order) {
 
 function productForOrder() { return state.products.find(product => product.id === state.order?.productId); }
 
-function header() {
-  return `<header class="site-header"><a class="brand" href="#" aria-label="TapeCommerce"><img src="./mark.svg" alt="" width="32" height="32"><span>TapeCommerce</span></a>
-    <nav aria-label="${state.language === 'zh' ? '主导航' : 'Main navigation'}"><button data-tab="experience">${t('navExperience')}</button><button data-tab="evidence">${t('navEvidence')}</button><button data-tab="merchant">${t('navMerchant')}</button></nav>
-    <button class="language-button" data-action="language" aria-label="${state.language === 'zh' ? 'Switch to English' : '切换为中文'}">${t('language')}</button></header>`;
-}
-
-function hero() {
-  const sample = state.config?.sampleIdentity;
-  const sampleName = sample && /^(0|[1-9][0-9]*)$/.test(String(sample.processorNumber)) && /^[1-9][0-9]*$/.test(String(sample.tokenId))
-    ? `${sample.tokenId}.2.${sample.processorNumber}.tape` : 'TapeOut';
-  return `<section class="hero"><div class="hero-copy"><h1>${t('heroTitle')}</h1><p>${t('heroBody')}</p><div class="hero-actions"><button class="button primary" data-tab="experience">${t('heroPrimary')}${arrow}</button><button class="text-button" data-tab="evidence">${t('heroSecondary')}${icon('external')}</button></div><span class="hero-caption">${t('heroCaption')}</span></div>
-    <div class="identity-visual" aria-label="${t('previewTitle')}"><div class="visual-backplate" aria-hidden="true"></div><div class="visual-sheet"><div class="sheet-top"><span class="sheet-wordmark">TapeCommerce</span><span class="sheet-symbol" aria-hidden="true">T<span>.</span></span></div>
-    <div class="sheet-name">${e(sampleName)}</div><div class="sheet-rule"></div><div class="sheet-data"><span>${t('previewIdentity')}</span><strong>${t('thirdParty').split(' · ')[0]}</strong><span>${t('previewNetwork')}</span><strong>X Layer</strong></div>
-    <button class="sheet-link" data-action="sample">${t('previewOpen')}${arrow}</button></div><div class="visual-footnote"><span class="proof-symbol">${icon('shield')}</span><div><strong>${t('previewTitle')}</strong><span>${t('previewBody')}</span></div></div></div></section>`;
-}
-
-function tabs() {
-  return `<div class="workspace-heading"><div><h2>${t('workspaceTitle')}</h2><p>${t('workspaceBody')}</p></div><div class="tabs" role="tablist" aria-label="${state.language === 'zh' ? '体验方式' : 'Explore'}">${[['experience', 'buyerTab'], ['evidence', 'evidenceTab'], ['merchant', 'merchantTab']].map(([id, label]) => `<button id="tab-${id}" role="tab" aria-selected="${state.tab === id}" aria-controls="panel-${id}" tabindex="${state.tab === id ? '0' : '-1'}" data-tab="${id}">${t(label)}</button>`).join('')}</div></div>`;
-}
-
-function sampleArtwork(product, index) {
-  const title = txt(product.title);
-  return `<div class="product-art art-${index % 3}" aria-hidden="true"><div class="sample-document"><span>TapeCommerce</span><div class="document-lines"><i></i><i></i><i></i></div><strong>${title}</strong><small>${e(product.format || 'DIGITAL EDITION')}</small></div><div class="sample-sliver"></div></div>`;
-}
-
-function catalogue() {
-  return `<div class="catalogue"><div class="section-heading"><h3>${t('catalogueTitle')}</h3><p>${t('catalogueBody')}</p></div><div class="product-list">${state.products.map((product, index) => {
-    const selected = state.order?.productId === product.id;
-    return `<article class="product ${selected ? 'selected' : ''}">${sampleArtwork(product, index)}<div class="product-body"><div class="product-meta"><span>${e(product.format || t('fileLabel'))}</span><span>${t('demoPrice')}</span></div><h4>${txt(product.title)}</h4><p>${txt(product.description)}</p><div class="product-bottom"><strong>${e(product.amountUSDT)} <small>USDT</small></strong><button class="button ${selected ? 'secondary' : 'dark'}" data-product="${e(product.id)}" ${state.busy || selected || PENDING_STATES.has(state.order?.status) || !demoReady() ? 'disabled' : ''}>${selected ? icon('check') + t('selectedProduct') : t('selectProduct') + arrow}</button></div></div></article>`;
-  }).join('') || `<p class="empty-message">${t('emptyCatalogue')}</p>`}</div></div>`;
-}
-
 function progress() {
   const status = state.order?.status;
   const step = status === 'delivered' ? 4 : PENDING_STATES.has(status) ? 2 : status === 'quoted' ? 2 : state.order ? 1 : 0;
@@ -155,10 +133,6 @@ function orderPanel() {
   return `<aside class="order-panel" aria-labelledby="order-title"><div class="order-heading"><h3 id="order-title">${t('orderTitle')}</h3>${order ? `<span class="order-state state-${e(order.status)}">${t('status_' + order.status)}</span>` : ''}</div>${progress()}${state.busy === 'create' ? `<p class="working-note"><span class="spinner"></span>${t('creating')}</p>` : ''}${body}${state.error ? `<p class="inline-error" role="alert">${t(state.error)}</p>` : ''}${state.notice ? `<p class="inline-note subtle" role="status">${t(state.notice)}</p>` : ''}</aside>`;
 }
 
-function buyerPanel() {
-  return `<section id="panel-experience" role="tabpanel" aria-labelledby="tab-experience"><div class="demo-banner"><span class="demo-dot" aria-hidden="true"></span><div><strong>${t('demoTitle')}</strong><p>${t('demoBody')}</p></div></div><div class="buyer-layout">${catalogue()}${orderPanel()}</div></section>`;
-}
-
 function addressRow(label, value) {
   const href = explorerAddress(value);
   return `<div><dt>${t(label)}</dt><dd>${href ? `<a href="${e(href)}" target="_blank" rel="noopener noreferrer" title="${e(value)}"><span>${e(value)}</span>${icon('external')}</a>` : '—'}</dd></div>`;
@@ -167,7 +141,7 @@ function addressRow(label, value) {
 function evidencePanel() {
   const identity = state.identity;
   const block = Number.isSafeInteger(identity?.blockNumber) && identity.blockNumber >= 0 ? identity.blockNumber : null;
-  return `<section id="panel-evidence" role="tabpanel" aria-labelledby="tab-evidence" class="evidence-layout"><div class="evidence-intro"><h3>${t('evidenceTitle')}</h3><p>${t('evidenceBody')}</p>
+  return `<section id="panel-evidence" class="evidence-layout"><div class="evidence-intro"><h3>${t('evidenceTitle')}</h3><p>${t('evidenceBody')}</p>
     <form id="identity-form"><div class="input-row"><label>${t('processorLabel')}<input name="processorNumber" inputmode="numeric" pattern="(0|[1-9][0-9]*)" maxlength="77" value="${e(state.processorNumber)}" placeholder="0" required autocomplete="off"></label><label>${t('tokenLabel')}<input name="tokenId" inputmode="numeric" pattern="[1-9][0-9]*" maxlength="77" value="${e(state.tokenId)}" placeholder="1" required autocomplete="off"></label></div><button class="button primary full-width" ${state.identityBusy ? 'disabled' : ''}>${state.identityBusy ? '<span class="spinner"></span>' + t('querying') : t('lookup') + arrow}</button></form>
     <button class="text-button sample-button" data-action="sample" ${state.identityBusy || !state.config?.sampleIdentity ? 'disabled' : ''}>${t('sampleButton')}${arrow}</button><p class="microcopy">${t('identityReadOnly')}</p>${state.identityError ? `<p class="inline-error" role="alert">${t(state.identityError)}</p>` : ''}</div>
     <div class="identity-record" aria-live="polite">${identity ? `<div class="record-heading"><div><span>${t('identityName')}</span><h4>${e(identity.name)}</h4></div><span class="chain-label">X Layer</span></div><p class="record-provenance">${t(state.identityMeta?.sampleIsThirdParty ? 'thirdParty' : 'publicRecord')}</p><dl class="record-fields">${addressRow('holder', identity.holder)}${addressRow('container', identity.container)}${addressRow('processorContract', identity.processor)}<div><dt>${t('activation')}</dt><dd><span class="state-dot ${identity.opened ? 'on' : ''}"></span>${t(identity.opened ? 'opened' : 'notOpened')}<span class="record-divider">/</span>${t(identity.live ? 'live' : 'notLive')}</dd></div><div><dt>${t('blockNumber')}</dt><dd>${block === null ? '—' : `<a href="https://www.oklink.com/xlayer/block/${block}" target="_blank" rel="noopener noreferrer">${block.toLocaleString('en-US')}${icon('external')}</a>`}</dd></div>${identity.checkedAt ? `<div><dt>${t('checkedAt')}</dt><dd>${formatTime(identity.checkedAt)}</dd></div>` : ''}</dl><div class="record-bottom">${icon('shield')}<p>${t('identityBoundary')}</p></div>` : `<div class="identity-empty">${icon('shield')}<h4>TapeOut / X Layer</h4><p>${t('identityEmpty')}</p></div>`}</div></section>`;
@@ -199,35 +173,77 @@ function merchantPanel() {
   ];
   let liveURL = null;
   try { if (typeof config.live?.checkoutUrl === 'string' && config.live.checkoutUrl.length) { const url = new URL(config.live.checkoutUrl, location.origin); if (config.live.ready === true && url.origin === location.origin && url.protocol === location.protocol) liveURL = url.href; } } catch { /* Only an explicitly configured same-origin checkout may be linked. */ }
-  return `<section id="panel-merchant" role="tabpanel" aria-labelledby="tab-merchant"><div class="merchant-intro"><h3>${t('merchantTitle')}</h3><p>${t('merchantBody')}</p></div><ol class="merchant-steps">${map.map(([id, title, body], index) => {
+  return `<section id="panel-merchant" ><div class="merchant-intro"><h3>${t('merchantTitle')}</h3><p>${t('merchantBody')}</p></div><ol class="merchant-steps">${map.map(([id, title, body], index) => {
     const row = steps.find(step => step.id === id || (id === 'products' && step.id === 'product'));
     const [label, kind] = featureStatus(row);
     return `<li><span class="merchant-number">${String(index + 1).padStart(2, '0')}</span><h4>${t(title)}</h4><p>${t(body)}</p><span class="feature-state ${kind}">${t(label)}</span></li>`;
   }).join('')}</ol><div class="merchant-bottom"><div class="business-note"><h4>${t('merchantCommerceTitle')}</h4><p>${t('merchantCommerceBody')}</p></div><div class="feature-list"><h4>${t('availability')}</h4>${features.map(([label, value]) => { const [status, kind] = featureStatus(value); return `<div><span>${t(label)}</span><strong class="feature-state ${kind}">${t(status)}</strong></div>`; }).join('')}${liveURL ? `<a href="${e(liveURL)}" class="button primary">${t('liveCheckout')}${arrow}</a>` : `<p class="microcopy">${t('liveUnavailable')}</p>`}</div></div></section>`;
 }
 
-function trust() {
-  return `<section class="trust-section"><h2>${t('trustTitle')}</h2><div class="trust-grid">${[['01', 'trustChain', 'trustChainBody'], ['02', 'trustService', 'trustServiceBody'], ['03', 'trustDemo', 'trustDemoBody']].map(([number, title, body]) => `<article><span>${number}</span><h3>${t(title)}</h3><p>${t(body)}</p></article>`).join('')}</div></section>`;
+function routeInfo() {
+  const parts = location.hash.replace(/^#\/?/, '').split('/');
+  return {page: parts[0] || 'shop', id: parts[1] ? (() => { try { return decodeURIComponent(parts[1]); } catch { return ''; } })() : ''};
 }
-
+const phrase = (zh,en) => state.language === 'zh' ? zh : en;
+function demoBanner() { return `<p class="notice demo-notice"><strong>${t('demoTitle')}</strong> · ${t('demoBody')}</p>`; }
+function storefront() {
+  return `${demoBanner()}${renderStorefront({template:theme,brand:'TapeCommerce',categories:[{id:'samples',name:phrase('自有数字样品','Original digital samples')}],heroTitle:phrase('好用的数字产品，\n让好想法更进一步。','Digital tools for\nyour next good idea.')})}`;
+}
+function productPage(id) {
+  const product = state.products.find(product => product.id === id);
+  if (!product) return `<p class="notice">${phrase('未找到商品。','Product not found.')}</p><a href="#/shop">${phrase('返回商品','Back to store')}</a>`;
+  return `<a class="back" href="#/shop">← ${phrase('返回商品','Back to store')}</a>${commerceHeading(localized(product.title,state.language),phrase('自有数字授权样品 · 演示订单','Original digital sample · Demo order'))}${commerceColumns(
+    `<h2>${phrase('商品说明','Product details')}</h2><p class="description">${txt(product.description)}</p><p>${e(product.format)} · ${e(product.filename)}</p><div class="notice">${t('catalogueBody')}</div>`,
+    `<h2>${phrase('购买选项','Purchase options')}</h2><form id="demo-buy-form" data-product-id="${e(product.id)}"><label class="field">${phrase('购买数量','Quantity')}<input type="number" value="1" min="1" max="1" readonly></label><p>${phrase('商品标价合计','Listed total')} <strong>${e(product.amountUSDT)} USDT</strong></p><fieldset class="payment-methods"><legend>${phrase('付款方式','Payment method')}</legend><label><input type="radio" name="method" checked><span><strong>${t('demoTitle')}</strong><small>${t('payNote')}</small></span></label></fieldset><button class="full" type="submit" ${!demoReady() || state.busy || PENDING_STATES.has(state.order?.status) ? 'disabled' : ''}>${phrase('确认价格并购买','Review order')}</button>${state.error ? `<p class="error" role="alert">${t(state.error)}</p>` : ''}</form>`)}${demoBanner()}`;
+}
+function showConfirmation(id) {
+  const product = state.products.find(product => product.id === id);
+  if (!product || state.busy) return;
+  const dialog = document.createElement('dialog');
+  dialog.innerHTML = purchaseConfirmation({title:localized(product.title,state.language),total:product.amountUSDT,heading:phrase('确认演示订单','Confirm demo order'),totalLabel:phrase('订单确认金额','Order total'),noteHTML:`<p class="notice">${t('payNote')}</p>`,methodsHTML:`<fieldset class="payment-methods"><legend>${phrase('付款方式','Payment method')}</legend><label><input type="radio" checked><span><strong>${t('demoTitle')}</strong><small>${phrase('使用测试余额，下一步核对实时 OKB 报价','Use a test balance; review the live OKB quote next')}</small></span></label></fieldset>`,actionsHTML:`<p class="error" hidden></p><div class="row"><button id="confirm-demo">${phrase('创建演示订单','Create demo order')}</button><button id="cancel-demo" class="secondary">${phrase('取消','Cancel')}</button></div>`});
+  document.body.append(dialog); dialog.showModal();
+  dialog.querySelector('#cancel-demo').onclick = () => dialog.close();
+  dialog.addEventListener('close',() => dialog.remove());
+  dialog.querySelector('#confirm-demo').onclick = async () => {
+    dialog.querySelector('#confirm-demo').disabled = true;
+    const result = await chooseProduct(id);
+    if (result) { dialog.close(); location.hash = '/order/' + encodeURIComponent(state.order.id); }
+    else { dialog.querySelector('#confirm-demo').disabled = false; const message = dialog.querySelector('.error'); message.hidden = false; message.textContent = t(state.error || 'requestFailed'); }
+  };
+}
+function demoOrderPage(id) {
+  if (!state.order || id !== state.order.id) return `${commerceHeading(phrase('演示订单','Demo order'))}<p class="notice">${t('sessionLost')}</p><a href="#/shop">${t('newOrder')}</a>`;
+  const product = productForOrder();
+  return `<a class="back" href="#/shop">← ${phrase('返回商品','Back to store')}</a>${commerceHeading(phrase('订单详情','Order details'),state.order.id)}${demoBanner()}${orderSummary({statusHTML:`<span class="badge">${t('status_' + state.order.status)}</span>`,total:state.order.amountUSDT,currency:'USDT',itemsHTML:`<p>${txt(product?.title || state.order.productId)} × 1</p>`})}${orderPanel()}`;
+}
+function fillCatalogue() {
+  const list = main.querySelector('.products'); if (!list) return;
+  const filtered = state.products.filter(product => `${localized(product.title,state.language)} ${localized(product.description,state.language)}`.toLowerCase().includes(searchText.toLowerCase()));
+  list.innerHTML = filtered.map((product,index) => renderProduct({name:localized(product.title,state.language),description:localized(product.description,state.language),category:phrase('自有数字样品','Original digital sample'),price:product.amountUSDT+' USDT',href:'#/product/'+encodeURIComponent(product.id)},theme,index)).join('') || `<p class="notice">${t('emptyCatalogue')}</p>`;
+  const count = main.querySelector('[data-catalog-count]'); if (count) count.textContent = String(filtered.length);
+}
 function render() {
   if (disposed) return;
+  stopNavigation(); stopLaptop();
   document.documentElement.lang = state.language === 'zh' ? 'zh-CN' : 'en';
-  document.title = state.language === 'zh' ? 'TapeCommerce · 让店铺有据可查' : 'TapeCommerce · Your store. With proof.';
-  let content;
-  if (state.loading) content = `<main class="page-loading" id="workspace" aria-busy="true"><span class="spinner"></span><p>${t('loading')}</p></main>`;
-  else if (state.loadError) content = `<main class="page-error" id="workspace"><h1>${t('errorTitle')}</h1><p role="alert">${t(state.loadError)}</p><button class="button primary" data-action="retry">${t('retry')}${arrow}</button></main>`;
-  else content = `<main>${hero()}<section class="workspace" id="workspace">${tabs()}${state.tab === 'experience' ? buyerPanel() : state.tab === 'evidence' ? evidencePanel() : merchantPanel()}</section>${trust()}</main>`;
-  root.innerHTML = `<div class="site-shell">${header()}${content}<footer class="site-footer"><a class="brand" href="#"><img src="./mark.svg" alt="" width="26" height="26"><span>TapeCommerce</span></a><p>${t('footer')}</p><small>${t('footerNote')}</small></footer></div>`;
+  const currentTheme = themeFor(theme); document.body.dataset.template = currentTheme.id; document.body.dataset.design = currentTheme.design;
+  document.querySelector('meta[name="color-scheme"]').content = ['orbital','neon'].includes(currentTheme.design) ? 'dark' : 'light';
+  document.title = 'TapeCommerce · ' + phrase('数字授权商店','Digital goods store');
+  const header = document.querySelector('body > header');
+  header.innerHTML = `<a class="brand" href="#/shop"><span class="brandmark">T</span><span>TapeCommerce</span><small>STORE</small></a><nav id="store-navigation" aria-label="${phrase('主导航','Main navigation')}"><a href="#/shop">${phrase('选购商品','Shop')}</a>${state.order ? `<a href="#/order/${e(state.order.id)}">${phrase('演示订单','Demo order')}</a>` : ''}<a href="#/evidence">${t('navEvidence')}</a><a href="#/merchant">${t('navMerchant')}</a></nav><button class="nav-toggle" aria-controls="store-navigation" aria-expanded="false" type="button">${phrase('菜单','Menu')}</button><button class="button subtle" data-action="language">${t('language')}</button>`;
+  stopNavigation = bindNavigation(header);
+  document.querySelector('.demo-toolbar').innerHTML = `<span>${phrase('原有六套商店模板 · 面向合法数字授权商家','Six original storefront themes · For licensed digital goods')}</span><label>${phrase('主题展示','Theme preview')} <select id="theme-select" aria-label="${phrase('主题展示','Theme preview')}">${themes.map(item=>`<option value="${item.id}" ${item.id===theme?'selected':''}>${e(item.name)} / ${item.design}</option>`).join('')}</select></label>`;
+  const route = routeInfo();
+  if (state.loading) main.innerHTML = `<p role="status">${t('loading')}</p>`;
+  else if (state.loadError) main.innerHTML = `<p class="error" role="alert">${t(state.loadError)}</p><button data-action="retry">${t('retry')}</button>`;
+  else if (route.page === 'product') main.innerHTML = productPage(route.id);
+  else if (route.page === 'order') main.innerHTML = demoOrderPage(route.id);
+  else if (route.page === 'evidence') main.innerHTML = `${commerceHeading(t('evidenceTitle'),t('evidenceBody'))}${evidencePanel()}`;
+  else if (route.page === 'merchant' || route.page === 'support') main.innerHTML = `${commerceHeading(t('merchantTitle'),t('merchantBody'))}${merchantPanel()}`;
+  else { main.innerHTML = storefront(); fillCatalogue(); stopLaptop = bindLaptop(main); }
+  document.querySelector('body > footer').innerHTML = `<span>TapeCommerce</span><span>${t('footerNote')}</span><a href="#/merchant">${t('navMerchant')}</a><a href="#/evidence">${t('navEvidence')}</a>`;
 }
-
-function setTab(tab, scroll = true) {
-  if (!['experience', 'evidence', 'merchant'].includes(tab)) return;
-  state.tab = tab;
-  history.replaceState(null, '', `#${tab}`);
-  render();
-  if (scroll) document.querySelector('#workspace')?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' });
-}
+function setTab(tab) { location.hash = '/' + (tab === 'experience' ? 'shop' : tab); render(); }
 
 function setOrder(payload) {
   const order = validatedOrder(payload?.order ?? payload);
@@ -299,7 +315,7 @@ async function renewQuote() {
   if (!expired || state.busy || disposed) return;
   // A signed invoice is immutable. A new order preserves the old invoice's
   // identity, even if its transaction is still somewhere in transit.
-  if (await chooseProduct(state.order.productId)) await orderAction('quote');
+  if (await chooseProduct(state.order.productId)) { location.hash = '/order/' + encodeURIComponent(state.order.id); await orderAction('quote'); }
 }
 
 async function orderAction(action) {
@@ -416,7 +432,7 @@ root.addEventListener('click', async event => {
   else if (action === 'retry') await initialize();
   else if (action === 'reset' && !state.busy) {
     ++orderGeneration; clearTimeout(pollTimer); clearSession(storage);
-    state.order = null; state.credential = null; state.error = ''; state.notice = ''; state.delivery = null; state.downloaded = false; render();
+    state.order = null; state.credential = null; state.error = ''; state.notice = ''; state.delivery = null; state.downloaded = false; location.hash = '/shop'; render();
   } else if (action === 'copy-license' && state.delivery?.licenseCode) {
     try { await navigator.clipboard.writeText(state.delivery.licenseCode); announce('copied'); }
     catch { state.error = 'copyError'; render(); }
@@ -424,6 +440,7 @@ root.addEventListener('click', async event => {
 });
 
 root.addEventListener('submit', event => {
+  if (event.target.id === 'demo-buy-form') { event.preventDefault(); showConfirmation(event.target.dataset.productId); return; }
   if (event.target.id !== 'identity-form') return;
   event.preventDefault();
   const data = new FormData(event.target);
@@ -432,6 +449,7 @@ root.addEventListener('submit', event => {
 });
 
 root.addEventListener('input', event => {
+  if (event.target.matches('input.search')) { searchText = event.target.value; fillCatalogue(); }
   if (event.target.name === 'processorNumber') state.processorNumber = event.target.value;
   if (event.target.name === 'tokenId') state.tokenId = event.target.value;
 });
@@ -455,7 +473,7 @@ tickTimer = setInterval(() => {
 }, 1000);
 
 window.addEventListener('pagehide', () => {
-  disposed = true; ++identityGeneration; ++orderGeneration;
+  disposed = true; ++identityGeneration; ++orderGeneration; stopNavigation(); stopLaptop();
   clearInterval(tickTimer); clearTimeout(pollTimer); api.dispose();
   for (const timer of downloadTimers) clearTimeout(timer);
   downloadTimers.clear();
@@ -465,3 +483,7 @@ window.addEventListener('pagehide', () => {
 
 window.addEventListener('pageshow', event => { if (event.persisted && disposed) location.reload(); });
 initialize();
+
+root.addEventListener('change', event => { if (event.target.id !== 'theme-select') return; theme = themeFor(event.target.value).id; try { storage?.setItem('tapecommerce-demo-theme',theme); } catch {} render(); });
+root.addEventListener('click', event => { const jump = event.target.closest('[data-catalog-jump]'); if (jump) { event.preventDefault(); main.querySelector('[data-catalog]')?.scrollIntoView({behavior:'smooth'}); } const category = event.target.closest('[data-category]'); if (category) { selectedCategory = category.dataset.category; main.querySelectorAll('[data-category]').forEach(button => (button.classList.toggle('active',button===category),button.setAttribute('aria-pressed',String(button===category)))); fillCatalogue(); } });
+window.addEventListener('hashchange', () => { document.querySelectorAll('dialog').forEach(dialog => dialog.close()); render(); window.scrollTo({top:0,behavior:'instant'}); });

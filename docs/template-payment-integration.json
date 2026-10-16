@@ -1,0 +1,174 @@
+{
+  "checkedAt": "2026-10-16T17:12:30.700Z",
+  "scope": "Local implementation acceptance; no mainnet transaction or deployment",
+  "showcase": {
+    "pages": [
+      {
+        "viewport": {
+          "width": 1440,
+          "height": 1100
+        },
+        "theme": "minimal",
+        "width": 1440,
+        "scroll": 1440,
+        "broken": [],
+        "design": "minimal"
+      },
+      {
+        "viewport": {
+          "width": 1440,
+          "height": 1100
+        },
+        "theme": "dark-business",
+        "width": 1440,
+        "scroll": 1440,
+        "broken": [],
+        "design": "orbital"
+      },
+      {
+        "viewport": {
+          "width": 1440,
+          "height": 1100
+        },
+        "theme": "card-catalog",
+        "width": 1440,
+        "scroll": 1440,
+        "broken": [],
+        "design": "warm"
+      },
+      {
+        "viewport": {
+          "width": 1440,
+          "height": 1100
+        },
+        "theme": "compact-list",
+        "width": 1440,
+        "scroll": 1440,
+        "broken": [],
+        "design": "arcade"
+      },
+      {
+        "viewport": {
+          "width": 1440,
+          "height": 1100
+        },
+        "theme": "editorial",
+        "width": 1440,
+        "scroll": 1440,
+        "broken": [],
+        "design": "editorial"
+      },
+      {
+        "viewport": {
+          "width": 1440,
+          "height": 1100
+        },
+        "theme": "playful",
+        "width": 1440,
+        "scroll": 1440,
+        "broken": [],
+        "design": "neon"
+      },
+      {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "theme": "minimal",
+        "width": 390,
+        "scroll": 390,
+        "broken": [],
+        "design": "minimal"
+      },
+      {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "theme": "dark-business",
+        "width": 390,
+        "scroll": 390,
+        "broken": [],
+        "design": "orbital"
+      },
+      {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "theme": "card-catalog",
+        "width": 390,
+        "scroll": 390,
+        "broken": [],
+        "design": "warm"
+      },
+      {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "theme": "compact-list",
+        "width": 390,
+        "scroll": 390,
+        "broken": [],
+        "design": "arcade"
+      },
+      {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "theme": "editorial",
+        "width": 390,
+        "scroll": 390,
+        "broken": [],
+        "design": "editorial"
+      },
+      {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "theme": "playful",
+        "width": 390,
+        "scroll": 390,
+        "broken": [],
+        "design": "neon"
+      }
+    ],
+    "errors": [],
+    "downloads": [
+      {
+        "viewport": 1440,
+        "filename": "tapecommerce-store-kit.html"
+      },
+      {
+        "viewport": 390,
+        "filename": "tapecommerce-store-kit.html"
+      }
+    ],
+    "started": "2026-10-16T17:12:30.700Z",
+    "passed": true,
+    "closed": true
+  },
+  "walletBrowser": [
+    {
+      "case": "member-desktop",
+      "quoteCount": 1,
+      "submitCount": 1,
+      "overflow": false,
+      "pageerrors": [],
+      "authoritativeDelivery": true
+    },
+    {
+      "case": "guest-mobile",
+      "quoteCount": 1,
+      "submitCount": 1,
+      "overflow": false,
+      "pageerrors": [],
+      "authoritativeDelivery": true
+    }
+  ],
+  "mainnetPaymentsEnabled": false,
+  "registrationSubmitted": false
+}
