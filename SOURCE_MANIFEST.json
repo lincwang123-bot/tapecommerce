@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "kind": "tapecommerce_public_source_release",
-  "createdAt": "2026-10-16T17:21:28.871Z",
+  "createdAt": "2026-10-16T18:18:18.513Z",
   "repository": "https://github.com/lincwang123-bot/tapecommerce",
   "license": "GPL-3.0-only for independent TapeCommerce Node/UI/modules/tests/docs; existing GPL backend and MIT Solidity licenses retained. See LICENSING.md.",
   "files": [
@@ -6521,6 +6521,26 @@
       "sha256": "77f104b2acd383d4f4134f5f9bfc88484ff8f03be4b7b4be011dc9243ca469e4"
     },
     {
+      "path": "deploy/tapecommerce/tapecode-browser-smoke.mjs",
+      "bytes": 10080,
+      "sha256": "baf880b5fd87cb2320a5baeae558e7fb0326b37c42e0fd7abf16a2170bc931b2"
+    },
+    {
+      "path": "deploy/tapecommerce/tapecode-frame-smoke.mjs",
+      "bytes": 11842,
+      "sha256": "46d25705d61e314a209b406538b8524e291cdec92186f3a24e39d0095704cc46"
+    },
+    {
+      "path": "deploy/tapecommerce/tapecode-package.mjs",
+      "bytes": 15093,
+      "sha256": "3bfd3d04cdd7a2f9d24bc880b4c5ef6b8c2dcdeb3a3f6339fa3e4039956fd7ee"
+    },
+    {
+      "path": "deploy/tapecommerce/tapecode-package.test.mjs",
+      "bytes": 7434,
+      "sha256": "bd18927063bbfa14f5a00be16b48a7e22b1c84f45a75f937a8e35ad2d6324107"
+    },
+    {
       "path": "docs/competition.md",
       "bytes": 5272,
       "sha256": "1c688b29ea76a4dd34e9e56bad78fdc222ba2b735dc7360f1abc44567e564fcb"
@@ -6531,6 +6551,11 @@
       "sha256": "d5b3e84a9f74476ee5363e7c7e89abce7d9dd8a97d2ff60cb8d8309dba6cc1b3"
     },
     {
+      "path": "docs/portable-cors-integration.md",
+      "bytes": 6367,
+      "sha256": "eee25cf656f450d4fd38e89bcdaf67ef29bd40a04314918d14288dc3e40a47b3"
+    },
+    {
       "path": "docs/protocol.md",
       "bytes": 2392,
       "sha256": "d0772ea474a28587e33721f54520b26873d7ba37ac68e97b8851f7137390e2dc"
@@ -6539,6 +6564,11 @@
       "path": "docs/quote-service.md",
       "bytes": 9312,
       "sha256": "e83e5d8fc57a7dfb201b0166a8e3de296b9e07021e19861a011c15a0aca8a8bf"
+    },
+    {
+      "path": "docs/tapecode-upload.md",
+      "bytes": 7027,
+      "sha256": "d2875a15b83ad889a0789ff6451d3dfe5dd3897111580edb76bb8aba3d88c86a"
     },
     {
       "path": "docs/template-payment-integration.json",
@@ -6632,8 +6662,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 8401,
-      "sha256": "0b6d3e3c46feccf070d64c1954a9eaac8eb77f27049ea2c8d45348192093192d"
+      "bytes": 9294,
+      "sha256": "0ed6f52ace5c60a7344f655834e3e0b158321f62a58aee41d569ae7246132c51"
     },
     {
       "path": "scripts/tapecommerce/readonly-adapter.mjs",
@@ -6667,13 +6697,13 @@
     },
     {
       "path": "showcase/public/app.js",
-      "bytes": 37764,
-      "sha256": "b0d4651ef755c24f03c8c177ef97666ee900a6b329cf0d3fd88b470663959120"
+      "bytes": 40645,
+      "sha256": "26ad84ffef581e7bdcc236491342c38c0c29626d847e0b6f3b19d1ace88b9a50"
     },
     {
       "path": "showcase/public/i18n.js",
-      "bytes": 17155,
-      "sha256": "a8db543dc538eab67e6777fe6ac82b77a7f9490bddb2b6453865418adfc805b2"
+      "bytes": 18000,
+      "sha256": "ca8014aa3e3bf3839a491feeb4280b092abf9f53ca558c7dfc15539342298e23"
     },
     {
       "path": "showcase/public/index.html",
@@ -6692,8 +6722,8 @@
     },
     {
       "path": "showcase/public/ui.js",
-      "bytes": 4968,
-      "sha256": "0f5556592c294e0b9b269475dcdef0c9fa06366d98df502c505962fd85c1601f"
+      "bytes": 5358,
+      "sha256": "fab0a6ac1cb67dd58b26e354420daf3dd3081be795ead5c8d680be1acea76587"
     },
     {
       "path": "showcase/sandbox.mjs",
@@ -6702,8 +6732,8 @@
     },
     {
       "path": "showcase/server.mjs",
-      "bytes": 15327,
-      "sha256": "761ba71ff2da5e20a0aad8c4bbefcff818030798568dbf852c9ca363ab564aa2"
+      "bytes": 18781,
+      "sha256": "a8f0c4c17bac686e4b10b41230bbf7ea3e7515d1d88ad0d0561a784a5f33792a"
     },
     {
       "path": "showcase/static-assets.mjs",
@@ -6716,9 +6746,19 @@
       "sha256": "0ad7fd0cc4552f26e3327cf5f0f7fd5b5d0cc7bfb4294f6742ed0f0d98778fa8"
     },
     {
+      "path": "showcase/test/sandbox-cors.integration.mjs",
+      "bytes": 5865,
+      "sha256": "18230513359475fdbf2dd4a9d1e14cfabc774f6254e4885ab81940dc78507326"
+    },
+    {
       "path": "showcase/test/server.test.mjs",
-      "bytes": 7413,
-      "sha256": "9806ae6e2ee652ab14b3e700b53a476de5887532c2488830191a350daa00b480"
+      "bytes": 16864,
+      "sha256": "4e6f21c888f52d486e457e3a80bb95b52c91f9a4f62d2dee6bb992c9710f65d1"
+    },
+    {
+      "path": "showcase/test/ui.test.mjs",
+      "bytes": 2310,
+      "sha256": "cee8b2b47f905f45e12659045280d53319cfda48eca04c9d370c0cd7ebe9005d"
     },
     {
       "path": "web/factory-theme.js",
@@ -6893,10 +6933,10 @@
   ],
   "scan": {
     "scope": "Allowlisted source bytes only; no production secret files or Git history read. Reviewed exceptions are matched by exact file hash; this is not a guarantee against every possible secret.",
-    "personalNeedlesLoaded": 4,
+    "personalNeedlesLoaded": 5,
     "blockingFindings": 0,
     "reviewFindings": 0,
-    "reviewedFindings": 20,
+    "reviewedFindings": 22,
     "findings": [
       {
         "path": "backend/internal/app/httpserver/content_routes_test.go",
@@ -7032,11 +7072,25 @@
         "reason": "Negative URL-validation test using synthetic user/password on example, localhost or public test addresses; no actual account credential."
       },
       {
+        "path": "showcase/test/server.test.mjs",
+        "kind": "credential_url",
+        "blocking": false,
+        "reviewed": true,
+        "reason": "Negative CORS allowlist test uses synthetic user:pass at gateway.example; no real account credential."
+      },
+      {
         "path": "platform/test/tapecommerce-quote-server.test.mjs",
         "kind": "credential_like_literal_review",
         "blocking": false,
         "reviewed": true,
         "reason": "Explicit synthetic-secret-for-tests literal used only by loopback HTTP fixtures; signing wallets are freshly generated and temporary files are removed."
+      },
+      {
+        "path": "deploy/tapecommerce/tapecode-package.test.mjs",
+        "kind": "credential_like_literal_review",
+        "blocking": false,
+        "reviewed": true,
+        "reason": "Mock API-client unit test uses the explicit synthetic-test-token literal; no real order or production credential."
       }
     ]
   }

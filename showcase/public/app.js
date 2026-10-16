@@ -12,8 +12,21 @@ const main = document.querySelector('main');
 let stopNavigation = () => {}, stopLaptop = () => {};
 let searchText = '';
 let selectedCategory = '';
-let theme = 'minimal';
-try { theme = themeFor(sessionStorage.getItem('tapecommerce-demo-theme')).id; } catch {}
+const opaquePreview = globalThis.origin === 'null';
+// Sandboxed viewers may deny both persistent stores. Keep credentials in this
+// document's memory and explain that reloading cannot recover them.
+function sessionStore() {
+  const memory = new Map(); let persistent;
+  try { persistent = window.sessionStorage; persistent.setItem('tapecommerce-storage-probe','1'); persistent.removeItem('tapecommerce-storage-probe'); } catch { persistent = null; }
+  return {
+    get persistent() { return Boolean(persistent); },
+    getItem(key) { try { return persistent ? persistent.getItem(key) : memory.get(key) ?? null; } catch { persistent = null; return memory.get(key) ?? null; } },
+    setItem(key,value) { memory.set(key,String(value)); try { persistent?.setItem(key,String(value)); } catch { persistent = null; } },
+    removeItem(key) { memory.delete(key); try { persistent?.removeItem(key); } catch { persistent = null; } },
+  };
+}
+const storage = sessionStore();
+let theme = themeFor(storage.getItem('tapecommerce-demo-theme')).id;
 const announcer = document.querySelector('#announcer');
 const api = createApi();
 let disposed = false;
@@ -24,8 +37,6 @@ let orderGeneration = 0;
 let refreshInFlight = false;
 const objectURLs = new Set();
 const downloadTimers = new Set();
-let storage;
-try { storage = window.sessionStorage; } catch { storage = null; }
 let savedLanguage;
 try { savedLanguage = storage?.getItem('tapecommerce-language'); } catch { /* Storage is optional. */ }
 const state = {
@@ -120,7 +131,8 @@ function orderPanel() {
     } else if (PENDING_STATES.has(order.status)) {
       body += `<div class="order-result pending"><div class="result-symbol"><span class="spinner"></span></div><h4>${t('pendingTitle')}</h4><p>${t('pendingBody')}</p></div><button class="button secondary full-width" data-action="refresh" ${busy ? 'disabled' : ''}>${icon('refresh')}${t('refreshStatus')}</button>`;
     } else if (order.status === 'delivered') {
-      body += `<div class="order-result success"><div class="result-symbol">${icon('check')}</div><h4>${t('deliveredTitle')}</h4><p>${t('deliveredBody')}</p></div><button class="button primary full-width" data-action="download" ${busy ? 'disabled' : ''}>${state.busy === 'download' ? '<span class="spinner"></span>' + t('downloading') : icon('download') + t(state.downloaded ? 'downloadAgain' : 'download')}</button>`;
+      body += `<div class="order-result success"><div class="result-symbol">${icon('check')}</div><h4>${t('deliveredTitle')}</h4><p>${t('deliveredBody')}</p></div><button class="button primary full-width" data-action="download" ${busy ? 'disabled' : ''}>${state.busy === 'download' ? '<span class="spinner"></span>' + t('downloading') : icon('download') + t(opaquePreview ? 'claimAndView' : state.downloaded ? 'downloadAgain' : 'download')}</button>`;
+      if (state.delivery?.contentText) body += `<label class="field delivery-content">${t('fileContent')}<textarea readonly rows="12" aria-label="${t('fileContent')}">${e(state.delivery.contentText)}</textarea></label><p class="notice">${t('sandboxDownloadBlocked')} <a href="https://tape.coco9.cc" target="_blank" rel="noopener noreferrer">${t('openBrowserDemo')}</a></p>`;
       if (state.downloaded) body += `<p class="download-feedback">${icon('check')}${t('downloaded')}</p>`;
       if (state.delivery?.licenseCode) body += `<div class="license"><span>${t('license')}</span><div><code>${e(state.delivery.licenseCode)}</code><button class="icon-button" data-action="copy-license" aria-label="${t('copyLicense')}" title="${t('copyLicense')}">${icon('copy')}</button></div><small>${t('licenseNote')}</small></div>`;
     } else if (order.status === 'review') {
@@ -142,7 +154,7 @@ function evidencePanel() {
   const identity = state.identity;
   const block = Number.isSafeInteger(identity?.blockNumber) && identity.blockNumber >= 0 ? identity.blockNumber : null;
   return `<section id="panel-evidence" class="evidence-layout"><div class="evidence-intro"><h3>${t('evidenceTitle')}</h3><p>${t('evidenceBody')}</p>
-    <form id="identity-form"><div class="input-row"><label>${t('processorLabel')}<input name="processorNumber" inputmode="numeric" pattern="(0|[1-9][0-9]*)" maxlength="77" value="${e(state.processorNumber)}" placeholder="0" required autocomplete="off"></label><label>${t('tokenLabel')}<input name="tokenId" inputmode="numeric" pattern="[1-9][0-9]*" maxlength="77" value="${e(state.tokenId)}" placeholder="1" required autocomplete="off"></label></div><button class="button primary full-width" ${state.identityBusy ? 'disabled' : ''}>${state.identityBusy ? '<span class="spinner"></span>' + t('querying') : t('lookup') + arrow}</button></form>
+    <form id="identity-form"><div class="input-row"><label>${t('processorLabel')}<input name="processorNumber" inputmode="numeric" pattern="(0|[1-9][0-9]*)" maxlength="77" value="${e(state.processorNumber)}" placeholder="0" required autocomplete="off"></label><label>${t('tokenLabel')}<input name="tokenId" inputmode="numeric" pattern="[1-9][0-9]*" maxlength="77" value="${e(state.tokenId)}" placeholder="1" required autocomplete="off"></label></div><button class="button primary full-width" type="${opaquePreview ? 'button' : 'submit'}" data-action="preview-submit" ${state.identityBusy ? 'disabled' : ''}>${state.identityBusy ? '<span class="spinner"></span>' + t('querying') : t('lookup') + arrow}</button></form>
     <button class="text-button sample-button" data-action="sample" ${state.identityBusy || !state.config?.sampleIdentity ? 'disabled' : ''}>${t('sampleButton')}${arrow}</button><p class="microcopy">${t('identityReadOnly')}</p>${state.identityError ? `<p class="inline-error" role="alert">${t(state.identityError)}</p>` : ''}</div>
     <div class="identity-record" aria-live="polite">${identity ? `<div class="record-heading"><div><span>${t('identityName')}</span><h4>${e(identity.name)}</h4></div><span class="chain-label">X Layer</span></div><p class="record-provenance">${t(state.identityMeta?.sampleIsThirdParty ? 'thirdParty' : 'publicRecord')}</p><dl class="record-fields">${addressRow('holder', identity.holder)}${addressRow('container', identity.container)}${addressRow('processorContract', identity.processor)}<div><dt>${t('activation')}</dt><dd><span class="state-dot ${identity.opened ? 'on' : ''}"></span>${t(identity.opened ? 'opened' : 'notOpened')}<span class="record-divider">/</span>${t(identity.live ? 'live' : 'notLive')}</dd></div><div><dt>${t('blockNumber')}</dt><dd>${block === null ? '—' : `<a href="https://www.oklink.com/xlayer/block/${block}" target="_blank" rel="noopener noreferrer">${block.toLocaleString('en-US')}${icon('external')}</a>`}</dd></div>${identity.checkedAt ? `<div><dt>${t('checkedAt')}</dt><dd>${formatTime(identity.checkedAt)}</dd></div>` : ''}</dl><div class="record-bottom">${icon('shield')}<p>${t('identityBoundary')}</p></div>` : `<div class="identity-empty">${icon('shield')}<h4>TapeOut / X Layer</h4><p>${t('identityEmpty')}</p></div>`}</div></section>`;
 }
@@ -185,7 +197,7 @@ function routeInfo() {
   return {page: parts[0] || 'shop', id: parts[1] ? (() => { try { return decodeURIComponent(parts[1]); } catch { return ''; } })() : ''};
 }
 const phrase = (zh,en) => state.language === 'zh' ? zh : en;
-function demoBanner() { return `<p class="notice demo-notice"><strong>${t('demoTitle')}</strong> · ${t('demoBody')}</p>`; }
+function demoBanner() { return `<p class="notice demo-notice"><strong>${t('demoTitle')}</strong> · ${t('demoBody')}</p>${!storage.persistent ? `<p class="notice">${t('noStorage')}</p>` : ''}`; }
 function storefront() {
   return `${demoBanner()}${renderStorefront({template:theme,brand:'TapeCommerce',categories:[{id:'samples',name:phrase('自有数字样品','Original digital samples')}],heroTitle:phrase('好用的数字产品，\n让好想法更进一步。','Digital tools for\nyour next good idea.')})}`;
 }
@@ -194,7 +206,7 @@ function productPage(id) {
   if (!product) return `<p class="notice">${phrase('未找到商品。','Product not found.')}</p><a href="#/shop">${phrase('返回商品','Back to store')}</a>`;
   return `<a class="back" href="#/shop">← ${phrase('返回商品','Back to store')}</a>${commerceHeading(localized(product.title,state.language),phrase('自有数字授权样品 · 演示订单','Original digital sample · Demo order'))}${commerceColumns(
     `<h2>${phrase('商品说明','Product details')}</h2><p class="description">${txt(product.description)}</p><p>${e(product.format)} · ${e(product.filename)}</p><div class="notice">${t('catalogueBody')}</div>`,
-    `<h2>${phrase('购买选项','Purchase options')}</h2><form id="demo-buy-form" data-product-id="${e(product.id)}"><label class="field">${phrase('购买数量','Quantity')}<input type="number" value="1" min="1" max="1" readonly></label><p>${phrase('商品标价合计','Listed total')} <strong>${e(product.amountUSDT)} USDT</strong></p><fieldset class="payment-methods"><legend>${phrase('付款方式','Payment method')}</legend><label><input type="radio" name="method" checked><span><strong>${t('demoTitle')}</strong><small>${t('payNote')}</small></span></label></fieldset><button class="full" type="submit" ${!demoReady() || state.busy || PENDING_STATES.has(state.order?.status) ? 'disabled' : ''}>${phrase('确认价格并购买','Review order')}</button>${state.error ? `<p class="error" role="alert">${t(state.error)}</p>` : ''}</form>`)}${demoBanner()}`;
+    `<h2>${phrase('购买选项','Purchase options')}</h2><form id="demo-buy-form" data-product-id="${e(product.id)}"><label class="field">${phrase('购买数量','Quantity')}<input type="number" value="1" min="1" max="1" readonly></label><p>${phrase('商品标价合计','Listed total')} <strong>${e(product.amountUSDT)} USDT</strong></p><fieldset class="payment-methods"><legend>${phrase('付款方式','Payment method')}</legend><label><input type="radio" name="method" checked><span><strong>${t('demoTitle')}</strong><small>${t('payNote')}</small></span></label></fieldset><button class="full" type="${opaquePreview ? 'button' : 'submit'}" data-action="preview-submit" ${!demoReady() || state.busy || PENDING_STATES.has(state.order?.status) ? 'disabled' : ''}>${phrase('确认价格并购买','Review order')}</button>${state.error ? `<p class="error" role="alert">${t(state.error)}</p>` : ''}</form>`)}${demoBanner()}`;
 }
 function showConfirmation(id) {
   const product = state.products.find(product => product.id === id);
@@ -298,7 +310,8 @@ async function chooseProduct(id) {
     if (typeof result.token !== 'string' || !/^[A-Za-z0-9._~-]{16,512}$/.test(result.token)) throw Object.assign(Error('invalid_response'), { code: 'invalid_response' });
     state.credential = { id: order.id, token: result.token };
     state.delivery = null; state.downloaded = false;
-    if (!saveSession(storage, state.credential)) state.notice = 'noStorage';
+    const saved = saveSession(storage, state.credential);
+    if (!storage.persistent || !saved) state.notice = 'noStorage';
     setOrder(result);
     return true;
   } catch (error) {
@@ -353,6 +366,11 @@ async function receiveDownload() {
     if (disposed || generation !== orderGeneration) return;
     if (typeof result.base64 !== 'string' || !result.base64.length || result.base64.length > 15_000_000 || !/^[A-Za-z0-9+/]*={0,2}$/.test(result.base64)) throw Error('invalid_delivery');
     const bytes = Uint8Array.from(atob(result.base64), character => character.charCodeAt(0));
+    if (opaquePreview) {
+      state.delivery = { filename: result.filename, licenseCode: typeof result.licenseCode === 'string' ? result.licenseCode : null, contentText: new TextDecoder().decode(bytes) };
+      state.downloaded = false; state.notice = 'sandboxDownloadBlocked'; announce('deliveryShown');
+      return;
+    }
     const blob = new Blob([bytes], { type: typeof result.contentType === 'string' ? result.contentType : 'application/octet-stream' });
     const url = URL.createObjectURL(blob);
     objectURLs.add(url);
@@ -424,7 +442,8 @@ root.addEventListener('click', async event => {
     state.language = state.language === 'zh' ? 'en' : 'zh';
     try { storage?.setItem('tapecommerce-language', state.language); } catch { /* Optional preference. */ }
     render();
-  } else if (action === 'sample') await queryIdentity(true);
+  } else if (action === 'preview-submit' && opaquePreview) { event.preventDefault(); handleLocalForm(button.closest('form')); }
+  else if (action === 'sample') await queryIdentity(true);
   else if (action === 'renew') await renewQuote();
   else if (action === 'quote' || action === 'pay') await orderAction(action);
   else if (action === 'refresh') await refreshOrder();
@@ -439,13 +458,24 @@ root.addEventListener('click', async event => {
   }
 });
 
-root.addEventListener('submit', event => {
-  if (event.target.id === 'demo-buy-form') { event.preventDefault(); showConfirmation(event.target.dataset.productId); return; }
-  if (event.target.id !== 'identity-form') return;
-  event.preventDefault();
-  const data = new FormData(event.target);
+function handleLocalForm(form) {
+  if (!form || !form.reportValidity()) return;
+  if (form.id === 'demo-buy-form') { showConfirmation(form.dataset.productId); return; }
+  if (form.id !== 'identity-form') return;
+  const data = new FormData(form);
   state.processorNumber = String(data.get('processorNumber')); state.tokenId = String(data.get('tokenId'));
   queryIdentity();
+}
+root.addEventListener('submit', event => {
+  if (!['demo-buy-form','identity-form'].includes(event.target.id)) return;
+  event.preventDefault(); handleLocalForm(event.target);
+});
+// Opaque host previews disallow native form submission, including Enter.
+root.addEventListener('keydown', event => {
+  if (!opaquePreview || event.key !== 'Enter' || !event.target.matches('input')) return;
+  const form = event.target.closest('form');
+  if (!form || !['demo-buy-form','identity-form'].includes(form.id)) return;
+  event.preventDefault(); form.querySelector('[data-action="preview-submit"]')?.click();
 });
 
 root.addEventListener('input', event => {
@@ -487,3 +517,11 @@ initialize();
 root.addEventListener('change', event => { if (event.target.id !== 'theme-select') return; theme = themeFor(event.target.value).id; try { storage?.setItem('tapecommerce-demo-theme',theme); } catch {} render(); });
 root.addEventListener('click', event => { const jump = event.target.closest('[data-catalog-jump]'); if (jump) { event.preventDefault(); main.querySelector('[data-catalog]')?.scrollIntoView({behavior:'smooth'}); } const category = event.target.closest('[data-category]'); if (category) { selectedCategory = category.dataset.category; main.querySelectorAll('[data-category]').forEach(button => (button.classList.toggle('active',button===category),button.setAttribute('aria-pressed',String(button===category)))); fillCatalogue(); } });
 window.addEventListener('hashchange', () => { document.querySelectorAll('dialog').forEach(dialog => dialog.close()); render(); window.scrollTo({top:0,behavior:'instant'}); });
+
+// A host viewer may consume hash links for scrolling. Explicit hash navigation
+// keeps the SPA in the same document and preserves memory-only order credentials.
+root.addEventListener('click', event => {
+  const anchor = event.target.closest('a[href^="#/"]');
+  if (!anchor) return;
+  event.preventDefault(); location.hash = anchor.getAttribute('href').slice(1);
+});

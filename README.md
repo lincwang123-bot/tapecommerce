@@ -40,6 +40,12 @@ The pinned Anvil package is installed without lifecycle scripts; the supervisor 
 
 Optional environment variables: `HOST`, `PORT`, `PUBLIC_ORIGIN`, `TAPECOMMERCE_DATA_DIR`, `ANVIL_BIN`, `TAPECOMMERCE_BRIDGE_BIN`. Public deployment must keep Node, Go and Anvil on loopback behind one HTTPS reverse proxy. The proxy must overwrite `X-Real-IP`; never expose raw RPC or bridge routes. The supervisor has limited order/session budgets, and synthetic state is disposable. Do not treat this as a production merchant payment service.
 
+## TapeCode frontend import
+
+Build an independent static frontend with `node deploy/tapecommerce/tapecode-package.mjs --out .local/TapeCommerce-DeWEB` (create `.local` first). The folder and ZIP contain the six existing themes and readable browser code, not the server or a database. The API remains hosted at `https://tape.coco9.cc`; importing the folder does not publish it on-chain or enable mainnet payments.
+
+TapeCode's isolated frame needs the public sandbox's explicit opaque-origin mode. It is off by default and must never be used for production accounts or real-money payment APIs. In a frame that prohibits downloads, authorized delivery displays the document content without falsely reporting a saved file. See [import and verification instructions](docs/tapecode-upload.md) and [API integration evidence](docs/portable-cors-integration.md). On-chain deployment is still pending.
+
 ## Verify the source
 
 ```sh

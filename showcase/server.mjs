@@ -25,7 +25,28 @@ const staticFiles = new Map([
 const productMeta = { title: { zh: '商店启动工具包', en: 'Store launch kit' }, description: { zh: '可编辑的单页数字商品模板与发布清单。完成演示订单后下载。', en: 'An editable digital-product page and launch checklist, delivered after your demo order.' }, format: 'HTML', filename: 'tapecommerce-store-kit.html' };
 const states = { quote_issued: 'quoted', submitted: 'submitted', detected: 'confirming', fulfillment_pending: 'confirming', delivered: 'delivered', review_required: 'review' };
 
-export function createShowcase({ sandbox, rates = okxSpotRates, lookup = readIdentity, publicOrigin, now = Date.now } = {}) {
+function corsAllowlist(values) {
+  if (!Array.isArray(values) || values.length > 16) throw new Error('invalid_cors_origins');
+  for (const value of values) {
+    let url;
+    try { url = new URL(value); } catch { throw new Error('invalid_cors_origins'); }
+    if (typeof value !== 'string' || url.protocol !== 'https:' || url.origin !== value || url.username || url.password
+      || value.includes('*') || url.hostname.endsWith('.')) throw new Error('invalid_cors_origins');
+  }
+  if (new Set(values).size !== values.length) throw new Error('invalid_cors_origins');
+  return new Set(values);
+}
+
+function publicApiMethod(path) {
+  if (['/api/config', '/api/catalog', '/api/identity'].includes(path)) return 'GET';
+  if (path === '/api/demo/orders') return 'POST';
+  const match = /^\/api\/demo\/orders\/[a-f0-9]{32}(?:\/(quote|pay|delivery))?$/.exec(path);
+  return match ? (['quote', 'pay'].includes(match[1]) ? 'POST' : 'GET') : null;
+}
+
+export function createShowcase({ sandbox, rates = okxSpotRates, lookup = readIdentity, publicOrigin, corsOrigins = [], allowOpaqueDemoOrigin = false, now = Date.now } = {}) {
+  const allowedCorsOrigins = corsAllowlist(corsOrigins);
+  if (typeof allowOpaqueDemoOrigin !== 'boolean') throw new Error('invalid_opaque_demo_origin_option');
   const orders = new Map(), limits = new Map(), identityCache = new Map();
   let healthy = true, identityActive = 0, activeCreates = 0, lifetimeCreates = 0;
   const product = async () => {
@@ -63,7 +84,14 @@ export function createShowcase({ sandbox, rates = okxSpotRates, lookup = readIde
   const server = createServer(async (req, res) => {
     try {
       const url = new URL(req.url, 'http://localhost');
-      if (!['GET', 'POST', 'HEAD'].includes(req.method)) fail('method_not_allowed', 405);
+      const origin = req.headers.origin;
+      const apiMethod = publicApiMethod(url.pathname);
+      if (!['GET', 'POST', 'HEAD', 'OPTIONS'].includes(req.method)) fail('method_not_allowed', 405);
+      if (req.method === 'OPTIONS' && allowedCorsOrigins.size === 0 && !allowOpaqueDemoOrigin) fail('method_not_allowed', 405);
+      // A sandboxed DeWEB iframe has an opaque origin. This opt-in is only for
+      // the public, disposable, test-fund demo: null is never caller identity.
+      // Order authorization remains the independent per-order capability token.
+      if (origin === 'null' && (!allowOpaqueDemoOrigin || !apiMethod)) fail('opaque_origin_forbidden', 403);
       if (req.method === 'GET' && url.pathname === '/healthz') return send(res, healthy ? 200 : 503, { status: healthy ? 'ok' : 'unavailable', sourceMode: 'isolated_evm' });
       if (req.method === 'GET' || req.method === 'HEAD') {
         const file = staticFiles.get(url.pathname);
@@ -71,10 +99,26 @@ export function createShowcase({ sandbox, rates = okxSpotRates, lookup = readIde
       }
       if (!url.pathname.startsWith('/api/')) fail('not_found', 404);
       if (!healthy) fail('demo_unavailable', 503);
-      if (req.headers['sec-fetch-site'] === 'cross-site') fail('cross_site_request', 403);
-      const origin = req.headers.origin;
       const expectedOrigin = publicOrigin || `http://${server.address().address === '127.0.0.1' ? '127.0.0.1' : 'localhost'}:${server.address().port}`;
-      if (origin && origin !== expectedOrigin) fail('invalid_origin', 403);
+      const crossOriginAllowed = (typeof origin === 'string' && origin !== expectedOrigin && allowedCorsOrigins.has(origin))
+        || (allowOpaqueDemoOrigin && origin === 'null' && apiMethod !== null);
+      if (req.headers['sec-fetch-site'] === 'cross-site' && !crossOriginAllowed) fail('cross_site_request', 403);
+      if (origin && origin !== expectedOrigin && !crossOriginAllowed) fail('invalid_origin', 403);
+      if (req.method === 'OPTIONS') {
+        if (!crossOriginAllowed) fail('method_not_allowed', 405);
+        if (!apiMethod) fail('not_found', 404);
+        if (req.headers['access-control-request-method'] !== apiMethod) fail('method_not_allowed', 405);
+        const requestedHeaders = req.headers['access-control-request-headers'];
+        if (requestedHeaders !== undefined && (typeof requestedHeaders !== 'string' || !requestedHeaders.trim()
+          || requestedHeaders.split(',').some(value => !['accept', 'content-type', 'x-demo-token'].includes(value.trim().toLowerCase())))) fail('cors_headers_forbidden', 403);
+      }
+      if (crossOriginAllowed) {
+        if (!apiMethod) fail('not_found', 404);
+        if (req.method !== 'OPTIONS' && req.method !== apiMethod) fail('method_not_allowed', 405);
+        if (req.headers.cookie || req.headers.authorization) fail('cors_credentials_forbidden', 403);
+        res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Vary', 'Origin');
+      }
       // Reverse proxy must overwrite X-Real-IP. Direct deployment binds loopback.
       const ip = String(req.headers['x-real-ip'] || req.socket.remoteAddress).slice(0, 128);
       const time = now();
@@ -84,6 +128,11 @@ export function createShowcase({ sandbox, rates = okxSpotRates, lookup = readIde
       const rate = limits.get(ip) || { count: 0, creates: 0, identities: 0, until: time + 60000 };
       limits.set(ip, rate);
       if (++rate.count > 120) fail('rate_limited', 429);
+      if (req.method === 'OPTIONS') {
+        res.writeHead(204, { ...headers, 'access-control-allow-methods': apiMethod,
+          'access-control-allow-headers': 'Accept, Content-Type, X-Demo-Token', 'access-control-max-age': '60' }).end();
+        return;
+      }
       let body = {};
       if (req.method === 'POST') {
         if (!/^application\/json(?:\s*;|$)/i.test(req.headers['content-type'] || '')) fail('json_required', 415);
@@ -183,9 +232,12 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const close = async (failed = false) => { if (failed) process.exitCode = 1; if (closing) return; closing = true; if (app) await app.close(); else await sandbox?.close(); };
   process.once('SIGTERM', () => close()); process.once('SIGINT', () => close());
   try {
+    const corsOrigins = JSON.parse(process.env.TAPE_SHOWCASE_CORS_ORIGINS || '[]');
+    corsAllowlist(corsOrigins);
     sandbox = await startSandbox({ onFailure: () => { app?.setUnhealthy(); if (app) void close(true); } });
     if (closing) { await sandbox.close(); process.exitCode = 0; } else {
-    app = createShowcase({ sandbox, publicOrigin: process.env.PUBLIC_ORIGIN });
+    app = createShowcase({ sandbox, publicOrigin: process.env.PUBLIC_ORIGIN, corsOrigins,
+      allowOpaqueDemoOrigin: process.env.TAPE_SHOWCASE_ALLOW_OPAQUE_DEMO_ORIGIN === '1' });
     app.server.on('error', async () => { await close(true); });
     app.server.listen(Number(process.env.PORT || 18273), process.env.HOST || '127.0.0.1', () => console.log(JSON.stringify({ event: 'ready', port: app.server.address().port, childPids: sandbox.pids, sourceMode: 'isolated_evm' })));
     }

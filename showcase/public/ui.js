@@ -60,11 +60,15 @@ export function clearSession(storage) {
   try { storage.removeItem(STORAGE_KEY); } catch { /* Private browsing may disallow storage. */ }
 }
 
-export function createApi({ fetchImpl = globalThis.fetch, timeoutMs = 20_000 } = {}) {
+// The static exporter may set this one reviewed HTTPS origin in its output.
+// Never derive a token destination from a URL parameter, storage or mutable config.
+export function createApi({ fetchImpl = globalThis.fetch, timeoutMs = 20_000, apiBase = '' } = {}) {
+  if (apiBase !== '' && apiBase !== 'https://tape.coco9.cc') throw new Error('invalid_api_base');
   const requests = new Set();
   return {
     async request(path, { method = 'GET', body, token } = {}) {
-      if (!path.startsWith('/api/')) throw new Error('invalid_api_path');
+      if (typeof path !== 'string' || !/^\/api\/[^\\#\s]*$/.test(path)
+        || !new URL(path, 'https://api.invalid').pathname.startsWith('/api/')) throw new Error('invalid_api_path');
       const controller = new AbortController();
       requests.add(controller);
       const timeout = setTimeout(() => controller.abort(), timeoutMs);
@@ -72,8 +76,8 @@ export function createApi({ fetchImpl = globalThis.fetch, timeoutMs = 20_000 } =
         const headers = { accept: 'application/json' };
         if (body !== undefined) headers['content-type'] = 'application/json';
         if (token) headers['X-Demo-Token'] = token;
-        const response = await fetchImpl(path, { method, headers, body: body === undefined ? undefined : JSON.stringify(body),
-          credentials: 'same-origin', cache: 'no-store', redirect: 'error', signal: controller.signal });
+        const response = await fetchImpl(apiBase + path, { method, headers, body: body === undefined ? undefined : JSON.stringify(body),
+          credentials: 'omit', cache: 'no-store', redirect: 'error', signal: controller.signal });
         let payload;
         try { payload = await response.json(); } catch { throw Object.assign(Error('invalid_response'), { code: 'invalid_response' }); }
         if (!response.ok) throw Object.assign(Error(payload?.error ?? 'request_failed'), { code: payload?.error ?? 'request_failed', status: response.status });
