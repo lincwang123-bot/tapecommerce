@@ -1,3 +1,7 @@
+> **Upstream README retained for attribution.** The following document belongs to Dujiao-Next. Its brands, sponsors, shops and promotional links refer to the upstream project, not to TapeCommerce or a claimed endorsement. This standalone competition repository includes the Go source corresponding to its isolated demo build; it does not include the complete upstream frontend/admin distribution. See the [TapeCommerce README](../README.md) for the actual demo scope and build instructions.
+
+---
+
 # Dujiao-Next
 
 Dujiao-Next is a digital goods e-commerce platform. This repository contains the complete

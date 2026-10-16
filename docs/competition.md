@@ -18,17 +18,24 @@ We reuse the original commerce order/stock system rather than claiming it was bu
 
 Sources: [Shopify cryptocurrency documentation](https://help.shopify.com/en/manual/payments/additional-payment-methods/cryptocurrency), [BTCPay documentation](https://docs.btcpayserver.org/). We do not claim to be the first, only, safest or lowest-cost option.
 
-## Video outline: 170 seconds
+## Verified demo: 140 seconds
 
-| Time | Show |
+Watch the [v0.1.0-demo release video](https://github.com/lincwang123-bot/tapecommerce/releases/tag/v0.1.0-demo). The final video is 140 seconds (2:20), 1920×1080, H.264/AAC. It uses one continuous browser recording with framing, subtitles and a standard synthetic voice; no payment result is replaced or presented as mainnet execution.
+
+| Approximate time | Actual recorded action |
 |---|---|
-| 0–18s | Seller problem and the distinction between live read-only data and local payments |
-| 18–40s | Actual TapeOut holder/container/live state, pinned block, third-party sample label |
-| 40–62s | USDT product price, fresh OKX last/ts, exact OKB quote and expiry |
-| 62–90s | Private Anvil payment using test funds; no viewer wallet |
-| 90–116s | Verified event through Go order/stock to synthetic license and HTML download |
-| 116–138s | Replay/idempotency and a genuine error state; never fabricate a pass |
-| 138–158s | Target users, price hypothesis, trial plan and absence of revenue claims |
-| 158–170s | Public source/product URLs and remaining mainnet/security/DeWEB milestones |
+| 0–25s | Explain the seller problem and show the real read-only TapeOut holder/container/live/block result |
+| 39–49s | Select the product, create a pending order, receive the OKX quote and expand exact OKB amount, source, last and timestamp |
+| 63–67s | Pay with local Anvil test funds, receive the original stock delivery result and expand the explicitly local transaction hash |
+| 77s | Download the authorized synthetic store kit |
+| 89s | Download the same order again; the two files have matching SHA-256 hashes |
+| 101–117s | Show the merchant view and availability boundaries |
+| 117–140s | Explain the target-user/pricing hypotheses and unlaunched mainnet service |
 
-Record only accepted working behaviour. Retain the actual error screen if a step fails; do not edit local receipts into mainnet transaction evidence. The participant has authorized publication of the independent source and the final verified demo video. Competition form submission remains separate and has not been performed. The public release video is a 140-second demonstration; the table above is the longer recording outline.
+Repeated download shows consistent file delivery; it does not by itself prove stock-transaction idempotency. The Go integration tests provide separate transaction/idempotency evidence. No failed-price or transaction-replay scene is claimed in this video. No real money, customer data or participant contact details are shown.
+
+## Work added on 2026-10-16–17
+
+The public source includes the newly developed TapeOut safe-block identity adapter, fresh OKX OKB-USDT conversion and exact integer quotes, the checkout contract, Go payment-evidence/admission/stock bridge, and the isolated Anvil showcase with its UI and tests. These connect to the existing Dujiao-Next commerce foundation; they are not a claim that the entire backend was created during the event.
+
+Review the actual files, tests and hashes in this independent [public repository](https://github.com/lincwang123-bot/tapecommerce) and `SOURCE_MANIFEST.json`. The participant has authorized the independent source and verified demo publication. Competition form submission remains separate and has not been performed.

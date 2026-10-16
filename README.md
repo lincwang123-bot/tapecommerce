@@ -15,6 +15,8 @@ The demo does not connect the viewer's wallet or need real OKB. Anvil deliberate
 
 Public address: **https://tape.coco9.cc** — deployment is in progress. The isolated VPS service has started; the Cloudflare hostname route is still being configured. Public availability has not yet been verified.
 
+[Watch the 140-second demo video](https://github.com/lincwang123-bot/tapecommerce/releases/tag/v0.1.0-demo). The video labels live read-only data and local simulated payments throughout.
+
 ## Run locally
 
 Requires Node **22.13+**, npm, Go **1.26+**, and a supported native Anvil platform. Use the committed lockfiles. No API key, production database, private wallet key, Redis or Docker is required. Outbound HTTPS to the official public OKX and X Layer endpoints must be available.
