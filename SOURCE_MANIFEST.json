@@ -6487,8 +6487,8 @@
     },
     {
       "path": "docs/competition.md",
-      "bytes": 4702,
-      "sha256": "071abb4ac3bb39867b0afd365a10753ba47456303d29af81925a623a4bccaa2d"
+      "bytes": 5272,
+      "sha256": "1c688b29ea76a4dd34e9e56bad78fdc222ba2b735dc7360f1abc44567e564fcb"
     },
     {
       "path": "docs/protocol.md",
@@ -6557,8 +6557,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 6959,
-      "sha256": "3587af71542aba3493d8c86b0c0307279c8fa7516c19c3827aa06c9e1d0b6e13"
+      "bytes": 7140,
+      "sha256": "8ec8f973cdfc80748646e6d6a796068fe7a506cdf75a41234d5b9c52c30bc012"
     },
     {
       "path": "scripts/tapecommerce/readonly-adapter.mjs",
@@ -6796,6 +6796,6 @@
     "target": "CGO_ENABLED=0 GOOS=linux GOARCH=amd64 -trimpath",
     "runtimeCleanup": "Lifecycle test recorded the owned Anvil PID and verified ESRCH after missing bridge cleanup; test process exited 0.",
     "backendGoSourceUnchangedFromVerifiedExport": true,
-    "documentationChanges": "Final video timeline and upstream README attribution clarified; Go implementation and dependency versions unchanged."
+    "documentationChanges": "Final video timeline, upstream README attribution and accepted public showcase availability clarified; Go/Node implementation and dependency versions unchanged."
   }
 }

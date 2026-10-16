@@ -13,9 +13,9 @@ TapeCommerce connects digital-goods inventory to TapeOut on X Layer. This reposi
 
 The demo does not connect the viewer's wallet or need real OKB. Anvil deliberately uses chain ID 196 to exercise the checkout's chain restriction; that does **not** turn it into X Layer mainnet. The UI labels payment receipts as local simulation.
 
-Public address: **https://tape.coco9.cc** — deployment is in progress. The isolated VPS service has started; the Cloudflare hostname route is still being configured. Public availability has not yet been verified.
+Try the public showcase: **[tape.coco9.cc](https://tape.coco9.cc)**. Public HTTPS, the payment-to-stock/download flow, order recovery, and desktop/mobile layouts were accepted on 2026-10-17. Payments still execute only in the isolated local EVM; **mainnet checkout is not launched**.
 
-[Watch the 140-second demo video](https://github.com/lincwang123-bot/tapecommerce/releases/tag/v0.1.0-demo). The video labels live read-only data and local simulated payments throughout.
+[Watch the 140-second demo release](https://github.com/lincwang123-bot/tapecommerce/releases/tag/v0.1.0-demo) or [download the MP4](https://github.com/lincwang123-bot/tapecommerce/releases/download/v0.1.0-demo/demo.mp4). The video labels live read-only data and local simulated payments throughout.
 
 ## Run locally
 

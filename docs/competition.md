@@ -2,6 +2,12 @@
 
 Checked 2026-10-17 (Asia/Taipei). [Official event](https://web3.okx.com/xlayer/build-x-series); [official form](https://forms.gle/EoDNbxQ65dev1wFd9). Deadline currently 2026-12-07 23:59 UTC, subject to official updates. The form requires GitHub and video URLs; keep the video at or below 180 seconds. Personal registration details are intentionally excluded from this source tree.
 
+## Public links
+
+- [Live showcase](https://tape.coco9.cc): HTTPS and the isolated payment/delivery flow were accepted on 2026-10-17, including desktop and mobile layouts. Mainnet payments remain unlaunched.
+- [Source repository](https://github.com/lincwang123-bot/tapecommerce): independent GPLv3 source, with original backend and Solidity licenses preserved.
+- [140-second video release](https://github.com/lincwang123-bot/tapecommerce/releases/tag/v0.1.0-demo) and [direct MP4](https://github.com/lincwang123-bot/tapecommerce/releases/download/v0.1.0-demo/demo.mp4).
+
 ## Pitch
 
 TapeCommerce helps authorised digital-goods sellers connect existing inventory to a verifiable TapeOut identity on X Layer. Sellers keep USDT prices; short-lived OKB quotes use the public OKX spot ticker with exact integer arithmetic. The checkout is designed for direct merchant payment, while order state and verified events gate stock delivery. The current showcase combines real read-only identity and market data with a clearly labelled local-chain payment-to-stock flow. Mainnet checkout and our own DeWEB publication are not live.
